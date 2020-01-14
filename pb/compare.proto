@@ -1,0 +1,24 @@
+syntax = "proto3";
+package pb;
+
+message ItalianCard {
+    uint32 number = 1;
+    Seed seed = 2;    
+}
+
+enum Seed {
+    COIN = 0;
+    CUP = 1;
+    SWORD = 2;
+    CUDGEL = 3;
+}
+
+message CardCompareRequest {
+    ItalianCard first_card = 1;
+    ItalianCard second_card = 2;
+    Seed briscola = 3;
+}
+
+message CardCompareResponse {
+    bool second_card_wins_over_first_one = 1;
+}

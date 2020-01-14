@@ -1,0 +1,10 @@
+syntax = "proto3";
+package pb;
+
+message PointCountRequest {
+    repeated uint32 card_number = 1;
+}
+
+message PointCountResponse {
+    uint32 count = 1;
+}

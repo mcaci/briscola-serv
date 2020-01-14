@@ -1,0 +1,12 @@
+syntax = "proto3";
+package pb;
+
+import "pb/compare.proto";
+import "pb/count.proto";
+import "pb/points.proto";
+
+service Briscola {
+    rpc CardPoints(CardPointsRequest) returns (CardPointsResponse) {}
+    rpc PointCount(PointCountRequest) returns (PointCountResponse) {}
+    rpc CardCompare(CardCompareRequest) returns (CardCompareResponse) {}
+}
