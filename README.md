@@ -21,14 +21,16 @@ Terminal 2 is where you execute briscola commands
 #### Using HTTP transport layer
 
 ```shell
-go run cmd/briscolad/main.go
+$ curl -XPOST -d '{"number":1}' http://localhost:8080/points
+11
 ```
 
 #### Using gRPC transport layer
 
 ```shell
 $ go run cmd/briscolacli/main.go points 1
-11                                                                                                     $ go run cmd/briscolacli/main.go points 10
+11
+$ go run cmd/briscolacli/main.go points 10
 4
 $ go run main.go cmd/briscolacli/count 1 2 10 3 5 8 6 4 4 2 5
 27
