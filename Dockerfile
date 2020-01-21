@@ -1,4 +1,4 @@
-FROM golang
+FROM golang as build-env
 
 LABEL author="Michele Caci <michele.caci@gmail.com>"
 
@@ -21,8 +21,13 @@ RUN unzip /tmp/protoc.zip -d /home/protoc
 WORKDIR /go/src/github.com/mcaci/briscola-serv
 
 RUN ["/home/protoc/bin/protoc", "pb/briscola.proto", "pb/compare.proto", "pb/count.proto", "pb/points.proto", "--go_out=plugins=grpc:."]
-RUN go build ./...
+RUN go build -o briscolad cmd/briscolad/main.go
+
+FROM scratch
+
+WORKDIR /app
+COPY --from=build-env /go/src/github.com/mcaci/briscola-serv/briscolad /app
 
 EXPOSE 8080 8081
 
-ENTRYPOINT ["go", "run", "cmd/briscolad/main.go"]
+ENTRYPOINT ["./briscolad"]
