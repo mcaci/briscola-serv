@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	grpcclient "github.com/mcaci/briscola-serv/client/grpc"
+	"github.com/mcaci/briscola-serv/cmd/briscolacli/grpcclient"
 	serv "github.com/mcaci/briscola-serv/service"
 	"google.golang.org/grpc"
 )
