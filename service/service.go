@@ -3,8 +3,8 @@ package serv
 import (
 	"context"
 
-	"github.com/mcaci/ita-cards/card"
 	"github.com/mcaci/briscola-serv/briscola"
+	"github.com/mcaci/ita-cards/card"
 )
 
 type Service interface {
@@ -24,7 +24,7 @@ func (b briscolaService) PointCount(ctx context.Context, numbers []uint32) (uint
 	for _, n := range numbers {
 		a = append(a, cardnumber(n))
 	}
-	return uint32(briscola.CountWithIntf(a)), nil
+	return uint32(briscola.Count(a)), nil
 }
 
 func (b briscolaService) CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error) {
