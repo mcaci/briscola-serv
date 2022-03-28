@@ -14,7 +14,7 @@ type Service interface {
 
 type briscolaService struct{}
 
-func NewService() Service {
+func NewService() briscolaService {
 	return briscolaService{}
 }
 

@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"context"
@@ -8,23 +8,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mcaci/briscola-serv/cmd/briscolacli/grpcclient"
+	endp "github.com/mcaci/briscola-serv/endpoint"
 	serv "github.com/mcaci/briscola-serv/service"
 	"google.golang.org/grpc"
 )
 
-func main() {
-	var (
-		grpcAddr = flag.String("addr", ":8081", "gRPC address")
-	)
-	flag.Parse()
+func Start() {
+	const grpcAddr = ":8081"
 	ctx := context.Background()
-	conn, err := grpc.Dial(*grpcAddr, grpc.WithInsecure(), grpc.WithTimeout(1*time.Second))
+	conn, err := grpc.Dial(grpcAddr, grpc.WithInsecure(), grpc.WithTimeout(1*time.Second))
 	if err != nil {
 		log.Fatalln("gRPC dial:", err)
 	}
 	defer conn.Close()
-	pointsService := grpcclient.New(conn)
+	cli := endp.NewGRPCClient(conn)
 	args := flag.Args()
 	var cmd string
 	cmd, args = pop(args)
@@ -33,14 +30,14 @@ func main() {
 		var number string
 		number, args = pop(args)
 		n, _ := strconv.Atoi(number)
-		points(ctx, pointsService, uint32(n))
+		points(ctx, cli, uint32(n))
 	case "count":
 		var numbers []uint32
 		for _, arg := range args {
 			n, _ := strconv.Atoi(arg)
 			numbers = append(numbers, uint32(n))
 		}
-		count(ctx, pointsService, numbers)
+		count(ctx, cli, numbers)
 	case "compare":
 		var number string
 		number, args = pop(args)
@@ -53,7 +50,7 @@ func main() {
 		scseed, _ := strconv.Atoi(number)
 		number, args = pop(args)
 		brseed, _ := strconv.Atoi(number)
-		compare(ctx, pointsService, uint32(fcnum), uint32(fcseed), uint32(scnum), uint32(scseed), uint32(brseed))
+		compare(ctx, cli, uint32(fcnum), uint32(fcseed), uint32(scnum), uint32(scseed), uint32(brseed))
 	default:
 		log.Fatalln("unknown command", cmd)
 	}

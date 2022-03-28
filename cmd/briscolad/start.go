@@ -1,4 +1,4 @@
-package briscolad
+package daemon
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func Start(o *Opts) error {
 	srv := serv.NewService()
 	data := srvData{
 		ctx:       context.Background(),
-		endpoints: makeEndpoints(srv),
+		endpoints: endp.NewEndpoints(srv),
 		errChan:   errChan,
 	}
 
@@ -74,15 +74,4 @@ func startGRPCSrv(srv srvData) {
 	gRPCServer := grpc.NewServer()
 	pb.RegisterBriscolaServer(gRPCServer, handler)
 	srv.errChan <- gRPCServer.Serve(listener)
-}
-
-func makeEndpoints(srv serv.Service) endp.Endpoints {
-	pointsEndpoint := endp.MakePointsEndpoint(srv)
-	countEndpoint := endp.MakeCountEndpoint(srv)
-	compareEndpoint := endp.MakeCompareEndpoint(srv)
-	return endp.Endpoints{
-		CardPointsEndpoint:  pointsEndpoint,
-		PointCountEndpoint:  countEndpoint,
-		CardCompareEndpoint: compareEndpoint,
-	}
 }
