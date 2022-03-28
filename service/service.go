@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/mcaci/briscola-serv/briscola"
-	"github.com/mcaci/ita-cards/card"
 )
 
 type Service interface {
@@ -15,32 +14,18 @@ type Service interface {
 
 type briscolaService struct{}
 
-func (b briscolaService) CardPoints(ctx context.Context, number uint32) (uint32, error) {
-	return uint32(briscola.Points(cardnumber(number))), nil
-}
-
-func (b briscolaService) PointCount(ctx context.Context, numbers []uint32) (uint32, error) {
-	var a []interface{ Number() uint8 }
-	for _, n := range numbers {
-		a = append(a, cardnumber(n))
-	}
-	return uint32(briscola.Count(a)), nil
-}
-
-func (b briscolaService) CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error) {
-	first, second := *card.MustID(uint8(firstCardNumber + firstCardSeed*10)), *card.MustID(uint8(secondCardNumber + secondCardSeed*10))
-	br := cardseed(briscolaSeed)
-	return briscola.IsOtherWinning(first, second, br), nil
-}
-
 func NewService() Service {
 	return briscolaService{}
 }
 
-type cardnumber uint8
+func (b briscolaService) CardPoints(ctx context.Context, number uint32) (uint32, error) {
+	return briscola.Points(number), nil
+}
 
-func (n cardnumber) Number() uint8 { return uint8(n) }
+func (b briscolaService) PointCount(ctx context.Context, numbers []uint32) (uint32, error) {
+	return briscola.Count(numbers), nil
+}
 
-type cardseed card.Seed
-
-func (s cardseed) Seed() card.Seed { return card.Seed(s) }
+func (b briscolaService) CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error) {
+	return briscola.IsOtherWinning(firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed), nil
+}

@@ -1,9 +1,10 @@
 package briscola
 
 // Count counts the number of points in a set of cards
-func Count[T interface{ Number() uint8 }](cards []T) (sum uint8) {
-	for _, c := range cards {
-		sum += Points(c)
+func Count(numbers []uint32) uint32 {
+	var sum uint32
+	for _, n := range numbers {
+		sum += Points(n)
 	}
-	return
+	return sum
 }

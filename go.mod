@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/go-kit/kit v0.9.0
 	github.com/golang/protobuf v1.3.2
-	github.com/mcaci/ita-cards v0.1.0
+	github.com/mcaci/ita-cards v0.1.3
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 	google.golang.org/grpc v1.26.0
 )
