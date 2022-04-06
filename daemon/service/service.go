@@ -3,14 +3,8 @@ package serv
 import (
 	"context"
 
-	"github.com/mcaci/briscola-serv/briscola"
+	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 )
-
-type Service interface {
-	CardPoints(ctx context.Context, number uint32) (uint32, error)
-	PointCount(ctx context.Context, number []uint32) (uint32, error)
-	CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error)
-}
 
 type briscolaService struct{}
 

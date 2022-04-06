@@ -10,11 +10,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	briscolagrpc "github.com/mcaci/briscola-serv/daemon/grpc"
+	briscolahttp "github.com/mcaci/briscola-serv/daemon/http"
+	serv "github.com/mcaci/briscola-serv/daemon/service"
 	endp "github.com/mcaci/briscola-serv/endpoint"
 	"github.com/mcaci/briscola-serv/pb"
-	briscolagrpc "github.com/mcaci/briscola-serv/server/grpc"
-	briscolahttp "github.com/mcaci/briscola-serv/server/http"
-	serv "github.com/mcaci/briscola-serv/service"
 	"google.golang.org/grpc"
 )
 
@@ -35,7 +35,7 @@ func Start(o *Opts) error {
 	srv := serv.NewService()
 	data := srvData{
 		ctx:       context.Background(),
-		endpoints: endp.NewEndpoints(srv),
+		endpoints: newServerEndpoints(srv),
 		errChan:   errChan,
 	}
 
@@ -74,4 +74,21 @@ func startGRPCSrv(srv srvData) {
 	gRPCServer := grpc.NewServer()
 	pb.RegisterBriscolaServer(gRPCServer, handler)
 	srv.errChan <- gRPCServer.Serve(listener)
+}
+
+type Services interface {
+	CardPoints(ctx context.Context, number uint32) (uint32, error)
+	PointCount(ctx context.Context, number []uint32) (uint32, error)
+	CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error)
+}
+
+func newServerEndpoints(srv Services) endp.Endpoints {
+	pointsEndpoint := endp.NewPointsEndpoint(srv)
+	countEndpoint := endp.NewCountEndpoint(srv)
+	compareEndpoint := endp.NewCompareEndpoint(srv)
+	return endp.Endpoints{
+		CardPointsEndpoint:  pointsEndpoint,
+		PointCountEndpoint:  countEndpoint,
+		CardCompareEndpoint: compareEndpoint,
+	}
 }

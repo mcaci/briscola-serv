@@ -9,7 +9,6 @@ import (
 	"time"
 
 	endp "github.com/mcaci/briscola-serv/endpoint"
-	serv "github.com/mcaci/briscola-serv/service"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +20,7 @@ func Start() {
 		log.Fatalln("gRPC dial:", err)
 	}
 	defer conn.Close()
-	cli := endp.NewGRPCClient(conn)
+	srv := newGRPCClientService(conn)
 	args := flag.Args()
 	var cmd string
 	cmd, args = pop(args)
@@ -30,14 +29,22 @@ func Start() {
 		var number string
 		number, args = pop(args)
 		n, _ := strconv.Atoi(number)
-		points(ctx, cli, uint32(n))
+		res, err := srv.CardPoints(ctx, uint32(n))
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		fmt.Println(res)
 	case "count":
 		var numbers []uint32
 		for _, arg := range args {
 			n, _ := strconv.Atoi(arg)
 			numbers = append(numbers, uint32(n))
 		}
-		count(ctx, cli, numbers)
+		res, err := srv.PointCount(ctx, numbers)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		fmt.Println(res)
 	case "compare":
 		var number string
 		number, args = pop(args)
@@ -50,34 +57,14 @@ func Start() {
 		scseed, _ := strconv.Atoi(number)
 		number, args = pop(args)
 		brseed, _ := strconv.Atoi(number)
-		compare(ctx, cli, uint32(fcnum), uint32(fcseed), uint32(scnum), uint32(scseed), uint32(brseed))
+		res, err := srv.CardCompare(ctx, uint32(fcnum), uint32(fcseed), uint32(scnum), uint32(scseed), uint32(brseed))
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		fmt.Println(res)
 	default:
 		log.Fatalln("unknown command", cmd)
 	}
-}
-
-func points(ctx context.Context, service serv.Service, number uint32) {
-	res, err := service.CardPoints(ctx, number)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	fmt.Println(res)
-}
-
-func count(ctx context.Context, service serv.Service, numbers []uint32) {
-	res, err := service.PointCount(ctx, numbers)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	fmt.Println(res)
-}
-
-func compare(ctx context.Context, service serv.Service, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) {
-	res, err := service.CardCompare(ctx, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	fmt.Println(res)
 }
 
 func pop(s []string) (string, []string) {
@@ -85,4 +72,15 @@ func pop(s []string) (string, []string) {
 		return "", s
 	}
 	return s[0], s[1:]
+}
+
+func newGRPCClientService(conn *grpc.ClientConn) endp.Endpoints {
+	pointsEndpoint := endp.NewClientPointsEndpoint(conn)
+	countEndpoint := endp.NewClientCountEndpoint(conn)
+	compareEndpoint := endp.NewClientCompareEndpoint(conn)
+	return endp.Endpoints{
+		CardPointsEndpoint:  pointsEndpoint,
+		PointCountEndpoint:  countEndpoint,
+		CardCompareEndpoint: compareEndpoint,
+	}
 }

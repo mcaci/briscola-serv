@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	cli "github.com/mcaci/briscola-serv/cmd/briscolacli"
-	daemon "github.com/mcaci/briscola-serv/cmd/briscolad"
+	"github.com/mcaci/briscola-serv/cli"
+	"github.com/mcaci/briscola-serv/daemon"
 )
 
 func main() {
