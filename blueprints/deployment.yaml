@@ -16,7 +16,7 @@ spec:
       - name: brsc
         image: mcaci/briscola-serv
         ports:
-        - containerPort: 80
+        - containerPort: 8080
           resources:
             # requests:
               # cpu: 10m
