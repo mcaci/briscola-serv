@@ -1,6 +1,8 @@
 syntax = "proto3";
 package pb;
 
+option go_package = "github.com/mcaci/pb";
+
 message PointCountRequest {
     repeated uint32 card_number = 1;
 }

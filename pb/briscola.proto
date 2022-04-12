@@ -1,6 +1,8 @@
 syntax = "proto3";
 package pb;
 
+option go_package = "github.com/mcaci/pb";
+
 import "pb/compare.proto";
 import "pb/count.proto";
 import "pb/points.proto";
