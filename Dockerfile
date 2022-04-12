@@ -1,29 +1,10 @@
-FROM golang as build-env
+FROM scratch
 
 LABEL author="Michele Caci <michele.caci@gmail.com>"
 
-RUN go get -v -d -u -t github.com/mcaci/briscola-serv/... \
-    google.golang.org/grpc \
-    github.com/golang/protobuf/protoc-gen-go \
-    github.com/golang/protobuf/proto; \
-    go install github.com/golang/protobuf/protoc-gen-go; \
-    curl -L https://github.com/google/protobuf/releases/download/v3.15.6/protoc-3.15.6-linux-x86_64.zip -o /tmp/protoc.zip; \
-    apt-get update; \
-    apt-get install unzip -y; \
-    mkdir -p /home/protoc; \
-    unzip /tmp/protoc.zip -d /home/protoc
-
-WORKDIR /go/src/github.com/mcaci/briscola-serv
-
-RUN /home/protoc/bin/protoc /go/src/github.com/mcaci/briscola-serv/pb/briscola.proto \
-    ./pb/compare.proto ./pb/count.proto ./pb/points.proto --go-grpc_out=.; \
-    CGO_ENABLED=0 go build -o briscolad main.go;
-
-FROM scratch
-
 WORKDIR /app
-COPY --from=build-env /go/src/github.com/mcaci/briscola-serv/briscolad /app
+COPY briscolad /app
 
 EXPOSE 8080 8081
 
-ENTRYPOINT ["./briscolad"]
+ENTRYPOINT ["./briscolad", "-d"]

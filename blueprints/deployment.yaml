@@ -15,16 +15,9 @@ spec:
       containers:
       - name: brsc
         image: mcaci/briscola-serv
-        args: ["-d"]
         ports:
         - containerPort: 8080
-          resources:
-            # requests:
-              # cpu: 10m
-              # memory: 30Mi
-            # limits:
-              # cpu: 20m
-              # memory: 50Mi
+        - containerPort: 8081
 ---
 kind: Service
 apiVersion: v1
@@ -35,9 +28,13 @@ metadata:
 spec:
   ports:
     - port: 8080
-      name: default
+      name: http
       protocol: TCP
       targetPort: 8080
+    - port: 8081
+      name: grpc
+      protocol: TCP
+      targetPort: 8081
   type: LoadBalancer
   selector:
     app: brsc

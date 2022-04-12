@@ -45,3 +45,25 @@ false
 $ go run main.go -cli compare 1 2 3 1 1
 true
 ```
+
+### Docker steps examples
+
+Building: 
+
+```sh
+CGO_ENABLED=0 go build -o briscolad main.go
+docker build -t mcaci/briscola-serv:v0.0.1 .
+rm briscolad
+```
+
+Running (can also use --detach):
+
+```sh
+docker run --rm -it -p 4000:8080 -p 8081:8081 mcaci/briscola-serv:v0.0.1
+```
+
+Pushing:
+
+```sh
+docker push mcaci/briscola-serv:v0.0.1
+```
