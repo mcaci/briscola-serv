@@ -125,19 +125,17 @@ type endpoints struct {
 }
 
 func (e endpoints) CardPoints(ctx context.Context, number uint32) (uint32, error) {
-	type PointsRequest struct {
+	req := struct {
 		CardNumber uint32 `json:"number"`
-	}
-	type PointsResponse struct {
-		Points uint32 `json:"points"`
-		Err    string `json:"err,omitempty"`
-	}
-	req := PointsRequest{CardNumber: number}
+	}{CardNumber: number}
 	resp, err := e.CardPointsEndpoint(ctx, req)
 	if err != nil {
 		return 0, err
 	}
-	pointsResp := resp.(PointsResponse)
+	pointsResp := resp.(struct {
+		Points uint32 `json:"points"`
+		Err    string `json:"err,omitempty"`
+	})
 	if pointsResp.Err != "" {
 		return 0, errors.New(pointsResp.Err)
 	}
@@ -145,19 +143,17 @@ func (e endpoints) CardPoints(ctx context.Context, number uint32) (uint32, error
 }
 
 func (e endpoints) PointCount(ctx context.Context, card_numbers []uint32) (uint32, error) {
-	type CountRequest struct {
+	req := struct {
 		CardNumbers []uint32 `json:"numbers"`
-	}
-	type CountResponse struct {
-		Points uint32 `json:"points"`
-		Err    string `json:"err,omitempty"`
-	}
-	req := CountRequest{CardNumbers: card_numbers}
+	}{CardNumbers: card_numbers}
 	resp, err := e.PointCountEndpoint(ctx, req)
 	if err != nil {
 		return 0, err
 	}
-	pointsResp := resp.(CountResponse)
+	pointsResp := resp.(struct {
+		Points uint32 `json:"points"`
+		Err    string `json:"err,omitempty"`
+	})
 	if pointsResp.Err != "" {
 		return 0, errors.New(pointsResp.Err)
 	}
@@ -165,23 +161,21 @@ func (e endpoints) PointCount(ctx context.Context, card_numbers []uint32) (uint3
 }
 
 func (e endpoints) CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error) {
-	type CompareRequest struct {
+	req := struct {
 		FirstCardNumber  uint32 `json:"firstCardNumber"`
 		FirstCardSeed    uint32 `json:"firstCardSeed"`
 		SecondCardNumber uint32 `json:"secondCardNumber"`
 		SecondCardSeed   uint32 `json:"secondCardSeed"`
 		BriscolaSeed     uint32 `json:"briscolaSeed"`
-	}
-	type CompareResponse struct {
-		SecondCardWins bool   `json:"secondCardWins"`
-		Err            string `json:"err,omitempty"`
-	}
-	req := CompareRequest{firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed}
+	}{firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed}
 	resp, err := e.CardCompareEndpoint(ctx, req)
 	if err != nil {
 		return false, err
 	}
-	compareResp := resp.(CompareResponse)
+	compareResp := resp.(struct {
+		SecondCardWins bool   `json:"secondCardWins"`
+		Err            string `json:"err,omitempty"`
+	})
 	if compareResp.Err != "" {
 		return false, errors.New(compareResp.Err)
 	}
@@ -189,48 +183,43 @@ func (e endpoints) CardCompare(ctx context.Context, firstCardNumber, firstCardSe
 }
 
 func PointsRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
-	type PointsRequest struct {
+	req := r.(struct {
 		CardNumber uint32 `json:"number"`
-	}
-	req := r.(PointsRequest)
+	})
 	return &pb.CardPointsRequest{CardNumber: req.CardNumber}, nil
 }
 
 func PointsResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(*pb.CardPointsResponse)
-	type PointsResponse struct {
+	return struct {
 		Points uint32 `json:"points"`
 		Err    string `json:"err,omitempty"`
-	}
-	return PointsResponse{Points: res.Points, Err: ""}, nil
+	}{Points: res.Points, Err: ""}, nil
 }
 
 func CountRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
-	type CountRequest struct {
+	req := r.(struct {
 		CardNumbers []uint32 `json:"numbers"`
-	}
-	req := r.(CountRequest)
+	})
 	return &pb.PointCountRequest{CardNumber: req.CardNumbers}, nil
 }
 
 func CountResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(*pb.PointCountResponse)
-	type CountResponse struct {
+	return struct {
 		Points uint32 `json:"points"`
 		Err    string `json:"err,omitempty"`
-	}
-	return CountResponse{Points: res.Count, Err: ""}, nil
+	}{Points: res.Count, Err: ""}, nil
 }
 
 func CompareRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
-	type CompareRequest struct {
+	req := r.(struct {
 		FirstCardNumber  uint32 `json:"firstCardNumber"`
 		FirstCardSeed    uint32 `json:"firstCardSeed"`
 		SecondCardNumber uint32 `json:"secondCardNumber"`
 		SecondCardSeed   uint32 `json:"secondCardSeed"`
 		BriscolaSeed     uint32 `json:"briscolaSeed"`
-	}
-	req := r.(CompareRequest)
+	})
 	first := &pb.ItalianCard{Number: req.FirstCardNumber, Seed: pb.Seed(req.FirstCardSeed)}
 	second := &pb.ItalianCard{Number: req.SecondCardNumber, Seed: pb.Seed(req.SecondCardSeed)}
 	return &pb.CardCompareRequest{FirstCard: first, SecondCard: second, Briscola: pb.Seed(req.BriscolaSeed)}, nil
@@ -238,9 +227,8 @@ func CompareRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, 
 
 func CompareResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(*pb.CardCompareResponse)
-	type CompareResponse struct {
+	return struct {
 		SecondCardWins bool   `json:"secondCardWins"`
 		Err            string `json:"err,omitempty"`
-	}
-	return CompareResponse{SecondCardWins: res.SecondCardWinsOverFirstOne, Err: ""}, nil
+	}{SecondCardWins: res.SecondCardWinsOverFirstOne, Err: ""}, nil
 }
