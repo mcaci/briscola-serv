@@ -4,7 +4,7 @@ import (
 	"context"
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
-	endp "github.com/mcaci/briscola-serv/endpoint"
+	endp "github.com/mcaci/briscola-serv/daemon/endpoint"
 	"github.com/mcaci/briscola-serv/pb"
 )
 

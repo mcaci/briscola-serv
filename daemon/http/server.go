@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	httptransport "github.com/go-kit/kit/transport/http"
-	endp "github.com/mcaci/briscola-serv/endpoint"
+	endp "github.com/mcaci/briscola-serv/daemon/endpoint"
 )
 
 func NewHTTPServer(ctx context.Context, endpoints endp.Endpoints) http.Handler {
