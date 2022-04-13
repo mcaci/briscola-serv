@@ -48,7 +48,7 @@ true
 
 ### Docker steps examples
 
-Building: 
+Building:
 
 ```sh
 CGO_ENABLED=0 go build -o briscolad main.go
@@ -67,3 +67,7 @@ Pushing:
 ```sh
 docker push mcaci/briscola-serv:v0.0.1
 ```
+
+### Deploying in a test cluster
+
+Run `sh deployment-script.sh`, `kubectl apply -f blueprints/deployment.yaml` and then the curl above to test
