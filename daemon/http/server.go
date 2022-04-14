@@ -10,8 +10,8 @@ import (
 
 func NewHTTPServer(ctx context.Context, endpoints endp.Endpoints) http.Handler {
 	m := http.NewServeMux()
-	m.Handle("/points", httptransport.NewServer(endpoints.CardPointsEndpoint, endp.RequestDecodeJSON[endp.PointsRequest], endp.ResponseEncodeJSON))
-	m.Handle("/count", httptransport.NewServer(endpoints.PointCountEndpoint, endp.RequestDecodeJSON[endp.CountRequest], endp.ResponseEncodeJSON))
-	m.Handle("/compare", httptransport.NewServer(endpoints.CardCompareEndpoint, endp.RequestDecodeJSON[endp.CompareRequest], endp.ResponseEncodeJSON))
+	m.Handle("/points", httptransport.NewServer(endpoints.CardPointsEndpoint, RequestDecodeJSON[endp.PointsRequest], ResponseEncodeJSON))
+	m.Handle("/count", httptransport.NewServer(endpoints.PointCountEndpoint, RequestDecodeJSON[endp.CountRequest], ResponseEncodeJSON))
+	m.Handle("/compare", httptransport.NewServer(endpoints.CardCompareEndpoint, RequestDecodeJSON[endp.CompareRequest], ResponseEncodeJSON))
 	return m
 }
