@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -15,10 +14,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-func Start() {
-	const grpcAddr = ":8081"
+type Opts struct {
+	GRPCAddr string
+}
+
+func Start(o *Opts) {
 	ctx := context.Background()
-	conn, err := grpc.Dial(grpcAddr, grpc.WithInsecure(), grpc.WithTimeout(1*time.Second))
+	conn, err := grpc.Dial(o.GRPCAddr, grpc.WithInsecure(), grpc.WithTimeout(1*time.Second))
 	if err != nil {
 		log.Fatalln("gRPC dial:", err)
 	}
@@ -36,7 +38,7 @@ func Start() {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		fmt.Println(res)
+		log.Println(res)
 	case "count":
 		var numbers []uint32
 		for _, arg := range args {
@@ -47,7 +49,7 @@ func Start() {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		fmt.Println(res)
+		log.Println(res)
 	case "compare":
 		var number string
 		number, args = pop(args)
@@ -64,7 +66,7 @@ func Start() {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		fmt.Println(res)
+		log.Println(res)
 	default:
 		log.Fatalln("unknown command", cmd)
 	}

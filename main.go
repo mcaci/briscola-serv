@@ -23,6 +23,8 @@ func main() {
 			GRPCAddr: *gRPCAddr,
 		})
 	case *isCli:
-		cli.Start()
+		cli.Start(&cli.Opts{
+			GRPCAddr: *gRPCAddr,
+		})
 	}
 }
