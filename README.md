@@ -48,7 +48,7 @@ true
 
 ### Docker steps examples
 
-Building: 
+Building:
 
 ```sh
 CGO_ENABLED=0 go build -o briscolad main.go
