@@ -67,3 +67,28 @@ Pushing:
 ```sh
 docker push mcaci/briscola-serv:v0.0.1
 ```
+
+### Deploying on KinD steps examples
+
+All these steps are grouped in the [deployment-script.sh](./deployment-script.sh) script.
+
+```sh
+kind create cluster --config conf/kind.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
+kubectl apply -f conf/metallb-cm.yaml
+kubectl apply -f blueprints/deployment.yaml
+```
+
+To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
+
+```sh
+$ curl -XPOST -d '{"number":1}' http://172.19.255.200:8080/points
+{"points":11}
+$ go run main.go -grpc 172.19.255.200:8081 -cli points 1
+11
+```
+
+For more information read Kind's LoadBalancer [documentation](https://kind.sigs.k8s.io/docs/user/loadbalancer/).
+
+When done run `kind delete cluster` to dispose of it.

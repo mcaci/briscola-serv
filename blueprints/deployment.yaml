@@ -5,12 +5,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: brsc
+      app: brsc
   replicas: 2
   template:
     metadata:
       labels:
-        run: brsc
+        app: brsc
     spec:
       containers:
       - name: brsc
