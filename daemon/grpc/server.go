@@ -3,8 +3,8 @@ package briscola
 import (
 	"context"
 
+	"github.com/go-kit/kit/endpoint"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
-	endp "github.com/mcaci/briscola-serv/daemon/endpoint"
 	"github.com/mcaci/briscola-serv/pb"
 )
 
@@ -14,11 +14,17 @@ type grpcServer struct {
 	compare grpctransport.Handler
 }
 
-func NewGRPCServer(ctx context.Context, endpoints endp.Endpoints) pb.BriscolaServer {
+type endpointInt interface {
+	Cp() endpoint.Endpoint
+	Pc() endpoint.Endpoint
+	Cc() endpoint.Endpoint
+}
+
+func NewGRPCServer(ctx context.Context, ep endpointInt) pb.BriscolaServer {
 	return &grpcServer{
-		points:  grpctransport.NewServer(endpoints.CardPointsEndpoint, endp.PointsRequestDecodeGRPC, endp.PointsResponseEncodeGRPC),
-		count:   grpctransport.NewServer(endpoints.PointCountEndpoint, endp.CountRequestDecodeGRPC, endp.CountResponseEncodeGRPC),
-		compare: grpctransport.NewServer(endpoints.CardCompareEndpoint, endp.CompareRequestDecodeGRPC, endp.CompareResponseEncodeGRPC),
+		points:  grpctransport.NewServer(ep.Cp(), PointsRequestDecodeGRPC, PointsResponseEncodeGRPC),
+		count:   grpctransport.NewServer(ep.Pc(), CountRequestDecodeGRPC, CountResponseEncodeGRPC),
+		compare: grpctransport.NewServer(ep.Cc(), CompareRequestDecodeGRPC, CompareResponseEncodeGRPC),
 	}
 }
 

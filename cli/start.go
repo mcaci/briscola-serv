@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -34,7 +35,7 @@ func Start(o *Opts) {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		log.Println(res)
+		fmt.Println(res)
 	case "count":
 		var numbers []uint32
 		for _, arg := range args {
@@ -45,7 +46,7 @@ func Start(o *Opts) {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		log.Println(res)
+		fmt.Println(res)
 	case "compare":
 		var number string
 		number, args = pop(args)
@@ -62,7 +63,7 @@ func Start(o *Opts) {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		log.Println(res)
+		fmt.Println(res)
 	default:
 		log.Fatalln("unknown command", cmd)
 	}

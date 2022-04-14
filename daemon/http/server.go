@@ -4,14 +4,26 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
-	endp "github.com/mcaci/briscola-serv/daemon/endpoint"
 )
 
-func NewHTTPServer(ctx context.Context, endpoints endp.Endpoints) http.Handler {
+type endpointInt interface {
+	Cp() endpoint.Endpoint
+	Pc() endpoint.Endpoint
+	Cc() endpoint.Endpoint
+}
+
+type jsonDecoder interface {
+	Cpd() httptransport.DecodeRequestFunc
+	Pcd() httptransport.DecodeRequestFunc
+	Ccd() httptransport.DecodeRequestFunc
+}
+
+func NewHTTPServer(ctx context.Context, ep endpointInt, jd jsonDecoder) http.Handler {
 	m := http.NewServeMux()
-	m.Handle("/points", httptransport.NewServer(endpoints.CardPointsEndpoint, RequestDecodeJSON[endp.PointsRequest], ResponseEncodeJSON))
-	m.Handle("/count", httptransport.NewServer(endpoints.PointCountEndpoint, RequestDecodeJSON[endp.CountRequest], ResponseEncodeJSON))
-	m.Handle("/compare", httptransport.NewServer(endpoints.CardCompareEndpoint, RequestDecodeJSON[endp.CompareRequest], ResponseEncodeJSON))
+	m.Handle("/points", httptransport.NewServer(ep.Cp(), jd.Cpd(), ResponseEncodeJSON))
+	m.Handle("/count", httptransport.NewServer(ep.Pc(), jd.Pcd(), ResponseEncodeJSON))
+	m.Handle("/compare", httptransport.NewServer(ep.Cc(), jd.Ccd(), ResponseEncodeJSON))
 	return m
 }

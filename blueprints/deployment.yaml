@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: brsc
-        image: mcaci/briscola-serv
+        image: mcaci/briscola-serv:0.0.2
         ports:
         - containerPort: 8080
         - containerPort: 8081
