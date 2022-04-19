@@ -21,7 +21,7 @@ func newGRPCClientService(conn *grpc.ClientConn) endpoints {
 func newClientPointsEndpoint(conn *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		conn, "pb.Briscola", "CardPoints",
-		PointsRequestEncodeGRPC, PointsResponseDecodeGRPC,
+		cpRqDec, cpRsDec,
 		pb.CardPointsResponse{},
 	).Endpoint()
 }
@@ -29,7 +29,7 @@ func newClientPointsEndpoint(conn *grpc.ClientConn) endpoint.Endpoint {
 func newClientCountEndpoint(conn *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		conn, "pb.Briscola", "PointCount",
-		CountRequestEncodeGRPC, CountResponseDecodeGRPC,
+		pcRqDec, pcRsDec,
 		pb.PointCountResponse{},
 	).Endpoint()
 }
@@ -37,7 +37,7 @@ func newClientCountEndpoint(conn *grpc.ClientConn) endpoint.Endpoint {
 func newClientCompareEndpoint(conn *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		conn, "pb.Briscola", "CardCompare",
-		CompareRequestEncodeGRPC, CompareResponseDecodeGRPC,
+		ccRqDec, ccRsDec,
 		pb.CardCompareResponse{},
 	).Endpoint()
 }

@@ -12,6 +12,7 @@ import (
 
 	briscolagrpc "github.com/mcaci/briscola-serv/daemon/grpc"
 	briscolahttp "github.com/mcaci/briscola-serv/daemon/http"
+	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 	"github.com/mcaci/briscola-serv/pb"
 	"google.golang.org/grpc"
 )
@@ -30,7 +31,7 @@ func Start(o *Opts) error {
 		errChan <- fmt.Errorf("%s", <-c)
 	}()
 
-	srv := briscolaService{}
+	srv := briscola.NewService()
 	data := srvData{
 		ctx:       context.Background(),
 		endpoints: newServerEndpoints(srv),

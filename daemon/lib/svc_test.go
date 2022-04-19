@@ -1,14 +1,14 @@
-package daemon_test
+package briscola_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/mcaci/briscola-serv/daemon"
+	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 )
 
 func TestPointsService(t *testing.T) {
-	srv := daemon.NewService()
+	srv := briscola.NewService()
 	ctx := context.Background()
 	points, err := srv.CardPoints(ctx, 1)
 	if err != nil {

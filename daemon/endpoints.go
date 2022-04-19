@@ -19,18 +19,18 @@ func (e Endpoints) Cp() endpoint.Endpoint { return e.CardPointsEndpoint }
 func (e Endpoints) Pc() endpoint.Endpoint { return e.PointCountEndpoint }
 func (e Endpoints) Cc() endpoint.Endpoint { return e.CardCompareEndpoint }
 
-func (e Endpoints) Cpd() httptransport.DecodeRequestFunc {
-	return briscolahttp.RequestDecodeJSON[struct {
+func (e Endpoints) CpRqDec() httptransport.DecodeRequestFunc {
+	return briscolahttp.RequestDecode[struct {
 		CardNumber uint32 `json:"number"`
 	}]
 }
-func (e Endpoints) Pcd() httptransport.DecodeRequestFunc {
-	return briscolahttp.RequestDecodeJSON[struct {
+func (e Endpoints) PcRqDec() httptransport.DecodeRequestFunc {
+	return briscolahttp.RequestDecode[struct {
 		CardNumbers []uint32 `json:"numbers"`
 	}]
 }
-func (e Endpoints) Ccd() httptransport.DecodeRequestFunc {
-	return briscolahttp.RequestDecodeJSON[struct {
+func (e Endpoints) CcRqDec() httptransport.DecodeRequestFunc {
+	return briscolahttp.RequestDecode[struct {
 		FirstCardNumber  uint32 `json:"firstCardNumber"`
 		FirstCardSeed    uint32 `json:"firstCardSeed"`
 		SecondCardNumber uint32 `json:"secondCardNumber"`

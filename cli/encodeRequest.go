@@ -6,21 +6,21 @@ import (
 	"github.com/mcaci/briscola-serv/pb"
 )
 
-func PointsRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func cpRqDec(ctx context.Context, r interface{}) (interface{}, error) {
 	req := r.(struct {
 		CardNumber uint32 `json:"number"`
 	})
 	return &pb.CardPointsRequest{CardNumber: req.CardNumber}, nil
 }
 
-func CountRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func pcRqDec(ctx context.Context, r interface{}) (interface{}, error) {
 	req := r.(struct {
 		CardNumbers []uint32 `json:"numbers"`
 	})
 	return &pb.PointCountRequest{CardNumber: req.CardNumbers}, nil
 }
 
-func CompareRequestEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func ccRqDec(ctx context.Context, r interface{}) (interface{}, error) {
 	req := r.(struct {
 		FirstCardNumber  uint32 `json:"firstCardNumber"`
 		FirstCardSeed    uint32 `json:"firstCardSeed"`

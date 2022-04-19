@@ -1,4 +1,4 @@
-package briscola
+package srvgrpc
 
 import (
 	"context"
@@ -6,21 +6,21 @@ import (
 	"github.com/mcaci/briscola-serv/pb"
 )
 
-func PointsRequestDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func pointsRequestDecode(ctx context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.CardPointsRequest)
 	return struct {
 		CardNumber uint32 `json:"number"`
 	}{CardNumber: req.CardNumber}, nil
 }
 
-func CountRequestDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func countRequestDecode(ctx context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.PointCountRequest)
 	return struct {
 		CardNumbers []uint32 `json:"numbers"`
 	}{CardNumbers: req.CardNumber}, nil
 }
 
-func CompareRequestDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func compareRequestDecode(ctx context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.CardCompareRequest)
 	return struct {
 		FirstCardNumber  uint32 `json:"firstCardNumber"`

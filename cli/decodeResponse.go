@@ -6,7 +6,7 @@ import (
 	"github.com/mcaci/briscola-serv/pb"
 )
 
-func PointsResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func cpRsDec(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(*pb.CardPointsResponse)
 	return struct {
 		Points uint32 `json:"points"`
@@ -14,7 +14,7 @@ func PointsResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, 
 	}{Points: res.Points, Err: ""}, nil
 }
 
-func CountResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func pcRsDec(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(*pb.PointCountResponse)
 	return struct {
 		Points uint32 `json:"points"`
@@ -22,7 +22,7 @@ func CountResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, e
 	}{Points: res.Count, Err: ""}, nil
 }
 
-func CompareResponseDecodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func ccRsDec(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(*pb.CardCompareResponse)
 	return struct {
 		SecondCardWins bool   `json:"secondCardWins"`

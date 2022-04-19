@@ -1,4 +1,4 @@
-package briscola
+package srvgrpc
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/mcaci/briscola-serv/pb"
 )
 
-func PointsResponseEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func pointsResponseEncode(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(struct {
 		Points uint32 `json:"points"`
 		Err    string `json:"err,omitempty"`
@@ -14,7 +14,7 @@ func PointsResponseEncodeGRPC(ctx context.Context, r interface{}) (interface{}, 
 	return &pb.CardPointsResponse{Points: res.Points}, nil
 }
 
-func CountResponseEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func countResponseEncode(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(struct {
 		Points uint32 `json:"points"`
 		Err    string `json:"err,omitempty"`
@@ -22,7 +22,7 @@ func CountResponseEncodeGRPC(ctx context.Context, r interface{}) (interface{}, e
 	return &pb.PointCountResponse{Count: res.Points}, nil
 }
 
-func CompareResponseEncodeGRPC(ctx context.Context, r interface{}) (interface{}, error) {
+func compareResponseEncode(ctx context.Context, r interface{}) (interface{}, error) {
 	res := r.(struct {
 		SecondCardWins bool   `json:"secondCardWins"`
 		Err            string `json:"err,omitempty"`
