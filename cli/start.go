@@ -2,9 +2,7 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -13,40 +11,58 @@ import (
 
 type Opts struct {
 	GRPCAddr string
+	Cmd      string
+	Args     []string
+	EpRun    endpointRunner
 }
 
-func Start(o *Opts) {
-	ctx := context.Background()
-	conn, err := grpc.Dial(o.GRPCAddr, grpc.WithInsecure(), grpc.WithTimeout(1*time.Second))
-	if err != nil {
-		log.Fatalln("gRPC dial:", err)
+func Start(o *Opts) error {
+	ep := o.EpRun
+	var conn *grpc.ClientConn
+	if ep == nil {
+		var err error
+		ep, err = setup(o.Cmd, o.Args)
+		if err != nil {
+			return err
+		}
+		conn, err = grpc.Dial(o.GRPCAddr, grpc.WithInsecure(), grpc.WithTimeout(1*time.Second))
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
 	}
-	defer conn.Close()
-	srv := newGRPCClientService(conn)
-	args := flag.Args()
-	var cmd string
-	cmd, args = pop(args)
+	ep.SetEndpoint(conn)
+	res, err := ep.Run(context.Background())
+	if err != nil {
+		return err
+	}
+	fmt.Println(res)
+	return nil
+}
+
+type endpointRunner interface {
+	SetEndpoint(conn *grpc.ClientConn)
+	Run(ctx context.Context) (any, error)
+}
+
+func setup(cmd string, args []string) (endpointRunner, error) {
 	switch cmd {
 	case "points":
 		var number string
 		number, args = pop(args)
 		n, _ := strconv.Atoi(number)
-		res, err := srv.CardPoints(ctx, uint32(n))
-		if err != nil {
-			log.Fatalln(err.Error())
-		}
-		fmt.Println(res)
+		return &cpEP{
+			number: uint32(n),
+		}, nil
 	case "count":
 		var numbers []uint32
 		for _, arg := range args {
 			n, _ := strconv.Atoi(arg)
 			numbers = append(numbers, uint32(n))
 		}
-		res, err := srv.PointCount(ctx, numbers)
-		if err != nil {
-			log.Fatalln(err.Error())
-		}
-		fmt.Println(res)
+		return &pcEP{
+			cardNumbers: numbers,
+		}, nil
 	case "compare":
 		var number string
 		number, args = pop(args)
@@ -59,13 +75,15 @@ func Start(o *Opts) {
 		scseed, _ := strconv.Atoi(number)
 		number, args = pop(args)
 		brseed, _ := strconv.Atoi(number)
-		res, err := srv.CardCompare(ctx, uint32(fcnum), uint32(fcseed), uint32(scnum), uint32(scseed), uint32(brseed))
-		if err != nil {
-			log.Fatalln(err.Error())
-		}
-		fmt.Println(res)
+		return &ccEP{
+			firstCardNumber:  uint32(fcnum),
+			firstCardSeed:    uint32(fcseed),
+			secondCardNumber: uint32(scnum),
+			secondCardSeed:   uint32(scseed),
+			briscolaSeed:     uint32(brseed),
+		}, nil
 	default:
-		log.Fatalln("unknown command", cmd)
+		return nil, fmt.Errorf("unknown command: %q", cmd)
 	}
 }
 

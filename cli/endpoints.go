@@ -5,19 +5,29 @@ import (
 	"errors"
 
 	"github.com/go-kit/kit/endpoint"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
+	"github.com/mcaci/briscola-serv/pb"
+	"google.golang.org/grpc"
 )
 
-type endpoints struct {
-	CardPointsEndpoint  endpoint.Endpoint
-	PointCountEndpoint  endpoint.Endpoint
-	CardCompareEndpoint endpoint.Endpoint
+type cpEP struct {
+	number uint32
+	call   endpoint.Endpoint
 }
 
-func (e endpoints) CardPoints(ctx context.Context, number uint32) (uint32, error) {
+func (ep *cpEP) SetEndpoint(conn *grpc.ClientConn) {
+	ep.call = grpctransport.NewClient(
+		conn, "pb.Briscola", "CardPoints",
+		cpRqDec, cpRsDec,
+		pb.CardPointsResponse{},
+	).Endpoint()
+}
+
+func (ep cpEP) Run(ctx context.Context) (any, error) {
 	req := struct {
 		CardNumber uint32 `json:"number"`
-	}{CardNumber: number}
-	resp, err := e.CardPointsEndpoint(ctx, req)
+	}{CardNumber: ep.number}
+	resp, err := ep.call(ctx, req)
 	if err != nil {
 		return 0, err
 	}
@@ -31,11 +41,24 @@ func (e endpoints) CardPoints(ctx context.Context, number uint32) (uint32, error
 	return pointsResp.Points, nil
 }
 
-func (e endpoints) PointCount(ctx context.Context, card_numbers []uint32) (uint32, error) {
+type pcEP struct {
+	cardNumbers []uint32
+	call        endpoint.Endpoint
+}
+
+func (ep *pcEP) SetEndpoint(conn *grpc.ClientConn) {
+	ep.call = grpctransport.NewClient(
+		conn, "pb.Briscola", "PointCount",
+		pcRqDec, pcRsDec,
+		pb.PointCountResponse{},
+	).Endpoint()
+}
+
+func (ep pcEP) Run(ctx context.Context) (any, error) {
 	req := struct {
 		CardNumbers []uint32 `json:"numbers"`
-	}{CardNumbers: card_numbers}
-	resp, err := e.PointCountEndpoint(ctx, req)
+	}{CardNumbers: ep.cardNumbers}
+	resp, err := ep.call(ctx, req)
 	if err != nil {
 		return 0, err
 	}
@@ -49,15 +72,32 @@ func (e endpoints) PointCount(ctx context.Context, card_numbers []uint32) (uint3
 	return pointsResp.Points, nil
 }
 
-func (e endpoints) CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error) {
+type ccEP struct {
+	firstCardNumber  uint32
+	firstCardSeed    uint32
+	secondCardNumber uint32
+	secondCardSeed   uint32
+	briscolaSeed     uint32
+	call             endpoint.Endpoint
+}
+
+func (ep *ccEP) SetEndpoint(conn *grpc.ClientConn) {
+	ep.call = grpctransport.NewClient(
+		conn, "pb.Briscola", "CardCompare",
+		ccRqDec, ccRsDec,
+		pb.CardCompareResponse{},
+	).Endpoint()
+}
+
+func (ep ccEP) Run(ctx context.Context) (any, error) {
 	req := struct {
 		FirstCardNumber  uint32 `json:"firstCardNumber"`
 		FirstCardSeed    uint32 `json:"firstCardSeed"`
 		SecondCardNumber uint32 `json:"secondCardNumber"`
 		SecondCardSeed   uint32 `json:"secondCardSeed"`
 		BriscolaSeed     uint32 `json:"briscolaSeed"`
-	}{firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed}
-	resp, err := e.CardCompareEndpoint(ctx, req)
+	}{ep.firstCardNumber, ep.firstCardSeed, ep.secondCardNumber, ep.secondCardSeed, ep.briscolaSeed}
+	resp, err := ep.call(ctx, req)
 	if err != nil {
 		return false, err
 	}

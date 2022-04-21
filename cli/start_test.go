@@ -1,26 +1,29 @@
-package cli
+package cli_test
 
 import (
+	"context"
+	"errors"
 	"testing"
+
+	"github.com/mcaci/briscola-serv/cli"
+	"google.golang.org/grpc"
 )
 
-func TestPop(t *testing.T) {
-	args := []string{"one", "two", "three"}
-	var s string
-	s, args = pop(args)
-	if s != "one" {
-		t.Errorf("unexpected \"%s\"", s)
+type mockRunner struct{ err error }
+
+func (mockRunner) SetEndpoint(*grpc.ClientConn)       {}
+func (r mockRunner) Run(context.Context) (any, error) { return 0, r.err }
+
+func TestStartOK(t *testing.T) {
+	err := cli.Start(&cli.Opts{GRPCAddr: ":8081", EpRun: mockRunner{}})
+	if err != nil {
+		t.Fatal(err)
 	}
-	s, args = pop(args)
-	if s != "two" {
-		t.Errorf("unexpected \"%s\"", s)
-	}
-	s, args = pop(args)
-	if s != "three" {
-		t.Errorf("unexpected \"%s\"", s)
-	}
-	s, args = pop(args)
-	if s != "" {
-		t.Errorf("unexpected \"%s\"", s)
+}
+
+func TestStartKO(t *testing.T) {
+	err := cli.Start(&cli.Opts{GRPCAddr: ":8081", EpRun: mockRunner{err: errors.New("Start KO")}})
+	if err == nil {
+		t.Fatal(err)
 	}
 }

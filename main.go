@@ -25,6 +25,8 @@ func main() {
 	case *isCli:
 		cli.Start(&cli.Opts{
 			GRPCAddr: *gRPCAddr,
+			Cmd:      flag.Args()[0],
+			Args:     flag.Args()[1:],
 		})
 	}
 }
