@@ -3,9 +3,9 @@ package cli
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
+	"github.com/mcaci/briscola-serv/cli/internal"
 	"google.golang.org/grpc"
 )
 
@@ -18,10 +18,10 @@ type Opts struct {
 
 func Start(o *Opts) error {
 	ep := o.EpRun
-	var conn *grpc.ClientConn
 	if ep == nil {
+		var conn *grpc.ClientConn
 		var err error
-		ep, err = setup(o.Cmd, o.Args)
+		ep, err = selectEP(o.Cmd, o.Args)
 		if err != nil {
 			return err
 		}
@@ -30,8 +30,8 @@ func Start(o *Opts) error {
 			return err
 		}
 		defer conn.Close()
+		ep.SetEndpoint(conn)
 	}
-	ep.SetEndpoint(conn)
 	res, err := ep.Run(context.Background())
 	if err != nil {
 		return err
@@ -45,51 +45,15 @@ type endpointRunner interface {
 	Run(ctx context.Context) (any, error)
 }
 
-func setup(cmd string, args []string) (endpointRunner, error) {
+func selectEP(cmd string, args []string) (endpointRunner, error) {
 	switch cmd {
 	case "points":
-		var number string
-		number, args = pop(args)
-		n, _ := strconv.Atoi(number)
-		return &cpEP{
-			number: uint32(n),
-		}, nil
+		return internal.Points(args)
 	case "count":
-		var numbers []uint32
-		for _, arg := range args {
-			n, _ := strconv.Atoi(arg)
-			numbers = append(numbers, uint32(n))
-		}
-		return &pcEP{
-			cardNumbers: numbers,
-		}, nil
+		return internal.Count(args)
 	case "compare":
-		var number string
-		number, args = pop(args)
-		fcnum, _ := strconv.Atoi(number)
-		number, args = pop(args)
-		fcseed, _ := strconv.Atoi(number)
-		number, args = pop(args)
-		scnum, _ := strconv.Atoi(number)
-		number, args = pop(args)
-		scseed, _ := strconv.Atoi(number)
-		number, args = pop(args)
-		brseed, _ := strconv.Atoi(number)
-		return &ccEP{
-			firstCardNumber:  uint32(fcnum),
-			firstCardSeed:    uint32(fcseed),
-			secondCardNumber: uint32(scnum),
-			secondCardSeed:   uint32(scseed),
-			briscolaSeed:     uint32(brseed),
-		}, nil
+		return internal.Compare(args)
 	default:
-		return nil, fmt.Errorf("unknown command: %q", cmd)
+		return nil, fmt.Errorf("command %q is not recognised", cmd)
 	}
-}
-
-func pop(s []string) (string, []string) {
-	if len(s) == 0 {
-		return "", s
-	}
-	return s[0], s[1:]
 }

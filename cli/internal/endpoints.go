@@ -1,4 +1,4 @@
-package cli
+package internal
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func (ep *cpEP) SetEndpoint(conn *grpc.ClientConn) {
 	).Endpoint()
 }
 
-func (ep cpEP) Run(ctx context.Context) (any, error) {
+func (ep *cpEP) Run(ctx context.Context) (any, error) {
 	req := struct {
 		CardNumber uint32 `json:"number"`
 	}{CardNumber: ep.number}
