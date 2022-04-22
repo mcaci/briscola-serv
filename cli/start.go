@@ -13,13 +13,17 @@ type Opts struct {
 	GRPCAddr string
 	Cmd      string
 	Args     []string
-	EpRun    endpointRunner
+	EpRun    runner
+}
+
+type runner interface {
+	Run(ctx context.Context, conn *grpc.ClientConn) (any, error)
 }
 
 func Start(o *Opts) error {
-	ep := o.EpRun
+	var conn *grpc.ClientConn
+	var ep = o.EpRun
 	if ep == nil {
-		var conn *grpc.ClientConn
 		var err error
 		ep, err = selectEP(o.Cmd, o.Args)
 		if err != nil {
@@ -30,9 +34,8 @@ func Start(o *Opts) error {
 			return err
 		}
 		defer conn.Close()
-		ep.SetEndpoint(conn)
 	}
-	res, err := ep.Run(context.Background())
+	res, err := ep.Run(context.Background(), conn)
 	if err != nil {
 		return err
 	}
@@ -40,12 +43,7 @@ func Start(o *Opts) error {
 	return nil
 }
 
-type endpointRunner interface {
-	SetEndpoint(conn *grpc.ClientConn)
-	Run(ctx context.Context) (any, error)
-}
-
-func selectEP(cmd string, args []string) (endpointRunner, error) {
+func selectEP(cmd string, args []string) (runner, error) {
 	switch cmd {
 	case "points":
 		return internal.Points(args)

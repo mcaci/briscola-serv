@@ -11,8 +11,7 @@ import (
 
 type mockRunner struct{ err error }
 
-func (mockRunner) SetEndpoint(*grpc.ClientConn)       {}
-func (r mockRunner) Run(context.Context) (any, error) { return 0, r.err }
+func (r mockRunner) Run(context.Context, *grpc.ClientConn) (any, error) { return 0, r.err }
 
 func TestStartOK(t *testing.T) {
 	err := cli.Start(&cli.Opts{EpRun: mockRunner{}})
