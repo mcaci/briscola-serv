@@ -23,56 +23,68 @@ type Opts struct {
 }
 
 func Start(o *Opts) error {
-	errChan := make(chan error)
-
-	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-		errChan <- fmt.Errorf("%s", <-c)
-	}()
-
-	srv := briscola.NewService()
-	data := srvData{
-		ctx:       context.Background(),
-		endpoints: newServerEndpoints(srv),
-		errChan:   errChan,
+	select {
+	case err := <-startHTTPSrv(newSrvData(o.HTTPAddr)):
+		return err
+	case err := <-startGRPCSrv(newSrvData(o.GRPCAddr)):
+		return err
+	case err := <-handleSigTerm():
+		return err
 	}
-
-	// start HTTP server
-	log.Println("listenning to http requests on", o.HTTPAddr)
-	data.addr = o.HTTPAddr
-	go startHTTPSrv(data)
-
-	// start gRPC server
-	log.Println("listenning to grpc requests on", o.GRPCAddr)
-	data.addr = o.GRPCAddr
-	go startGRPCSrv(data)
-
-	return <-errChan
 }
 
 type srvData struct {
 	ctx       context.Context
 	addr      string
 	endpoints Endpoints
-	errChan   chan<- error
 }
 
-func startHTTPSrv(srv srvData) {
-	handler := briscolahttp.NewHTTPServer(srv.ctx, srv.endpoints, srv.endpoints)
-	srv.errChan <- http.ListenAndServe(srv.addr, handler)
-}
-
-func startGRPCSrv(srv srvData) {
-	listener, err := net.Listen("tcp", srv.addr)
-	if err != nil {
-		srv.errChan <- err
-		return
+func newSrvData(addr string) *srvData {
+	srv := briscola.NewService()
+	data := srvData{
+		ctx:       context.Background(),
+		addr:      addr,
+		endpoints: newServerEndpoints(srv),
 	}
-	handler := briscolagrpc.NewGRPCServer(srv.ctx, srv.endpoints)
-	gRPCServer := grpc.NewServer()
-	pb.RegisterBriscolaServer(gRPCServer, handler)
-	srv.errChan <- gRPCServer.Serve(listener)
+	return &data
+}
+
+func startHTTPSrv(srv *srvData) <-chan error {
+	log.Println("listenning to http requests on", srv.addr)
+	handler := briscolahttp.NewHTTPServer(srv.ctx, srv.endpoints, srv.endpoints)
+	errChan := make(chan error)
+	go func() {
+		errChan <- http.ListenAndServe(srv.addr, handler)
+	}()
+	return errChan
+}
+
+func startGRPCSrv(srv *srvData) <-chan error {
+	log.Println("listenning to grpc requests on", srv.addr)
+	errChan := make(chan error)
+	go func() {
+		listener, err := net.Listen("tcp", srv.addr)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		handler := briscolagrpc.NewGRPCServer(srv.ctx, srv.endpoints)
+		gRPCServer := grpc.NewServer()
+		pb.RegisterBriscolaServer(gRPCServer, handler)
+		errChan <- gRPCServer.Serve(listener)
+	}()
+	return errChan
+}
+
+func handleSigTerm() <-chan error {
+	log.Println("Press Ctrl+C to terminate")
+	errChan := make(chan error)
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errChan <- fmt.Errorf("%s", <-c)
+	}()
+	return errChan
 }
 
 type services interface {
