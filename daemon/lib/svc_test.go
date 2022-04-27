@@ -8,9 +8,10 @@ import (
 )
 
 func TestPointsService(t *testing.T) {
-	srv := briscola.NewService()
 	ctx := context.Background()
-	points, err := srv.CardPoints(ctx, 1)
+	points, err := briscola.PointsEP(ctx, struct {
+		CardNumber uint32 `json:"number"`
+	}{CardNumber: 1})
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}

@@ -12,7 +12,6 @@ import (
 
 	briscolagrpc "github.com/mcaci/briscola-serv/daemon/grpc"
 	briscolahttp "github.com/mcaci/briscola-serv/daemon/http"
-	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 	"github.com/mcaci/briscola-serv/pb"
 	"google.golang.org/grpc"
 )
@@ -24,53 +23,37 @@ type Opts struct {
 
 func Start(o *Opts) error {
 	select {
-	case err := <-startHTTPSrv(newSrvData(o.HTTPAddr)):
+	case err := <-startHTTPSrv(context.TODO(), o.HTTPAddr):
 		return err
-	case err := <-startGRPCSrv(newSrvData(o.GRPCAddr)):
+	case err := <-startGRPCSrv(context.TODO(), o.GRPCAddr):
 		return err
 	case err := <-handleSigTerm():
 		return err
 	}
 }
 
-type srvData struct {
-	ctx       context.Context
-	addr      string
-	endpoints Endpoints
-}
-
-func newSrvData(addr string) *srvData {
-	srv := briscola.NewService()
-	data := srvData{
-		ctx:       context.Background(),
-		addr:      addr,
-		endpoints: newServerEndpoints(srv),
-	}
-	return &data
-}
-
-func startHTTPSrv(srv *srvData) <-chan error {
-	log.Println("listenning to http requests on", srv.addr)
-	handler := briscolahttp.NewHTTPServer(srv.ctx, srv.endpoints, srv.endpoints)
+func startHTTPSrv(ctx context.Context, addr string) <-chan error {
+	log.Println("listenning to http requests on", addr)
+	handler := briscolahttp.NewHandler(ctx)
 	errChan := make(chan error)
 	go func() {
-		errChan <- http.ListenAndServe(srv.addr, handler)
+		errChan <- http.ListenAndServe(addr, handler)
 	}()
 	return errChan
 }
 
-func startGRPCSrv(srv *srvData) <-chan error {
-	log.Println("listenning to grpc requests on", srv.addr)
+func startGRPCSrv(ctx context.Context, addr string) <-chan error {
+	log.Println("listenning to grpc requests on", addr)
 	errChan := make(chan error)
 	go func() {
-		listener, err := net.Listen("tcp", srv.addr)
+		listener, err := net.Listen("tcp", addr)
 		if err != nil {
 			errChan <- err
 			return
 		}
-		handler := briscolagrpc.NewGRPCServer(srv.ctx, srv.endpoints)
+		server := briscolagrpc.NewServer(ctx)
 		gRPCServer := grpc.NewServer()
-		pb.RegisterBriscolaServer(gRPCServer, handler)
+		pb.RegisterBriscolaServer(gRPCServer, server)
 		errChan <- gRPCServer.Serve(listener)
 	}()
 	return errChan
@@ -85,21 +68,4 @@ func handleSigTerm() <-chan error {
 		errChan <- fmt.Errorf("%s", <-c)
 	}()
 	return errChan
-}
-
-type services interface {
-	CardPoints(ctx context.Context, number uint32) (uint32, error)
-	PointCount(ctx context.Context, number []uint32) (uint32, error)
-	CardCompare(ctx context.Context, firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) (bool, error)
-}
-
-func newServerEndpoints(srv services) Endpoints {
-	pointsEndpoint := newPointsEndpoint(srv)
-	countEndpoint := newCountEndpoint(srv)
-	compareEndpoint := newCompareEndpoint(srv)
-	return Endpoints{
-		CardPointsEndpoint:  pointsEndpoint,
-		PointCountEndpoint:  countEndpoint,
-		CardCompareEndpoint: compareEndpoint,
-	}
 }
