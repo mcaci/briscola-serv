@@ -2,6 +2,7 @@ package srvgrpc
 
 import (
 	"context"
+	"log"
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	briscola "github.com/mcaci/briscola-serv/daemon/lib"
@@ -23,8 +24,12 @@ func NewServer(ctx context.Context) pb.BriscolaServer {
 }
 
 func (s *srv) CardPoints(ctx context.Context, r *pb.CardPointsRequest) (*pb.CardPointsResponse, error) {
-	_, resp, err := s.points.ServeGRPC(ctx, r)
+	ctx, resp, err := s.points.ServeGRPC(ctx, r)
+	log.Println("err is", err)
 	if err != nil {
+		return nil, err
+	}
+	if ctx.Err() != nil {
 		return nil, err
 	}
 	return resp.(*pb.CardPointsResponse), nil
