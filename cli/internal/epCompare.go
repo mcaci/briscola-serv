@@ -75,7 +75,7 @@ func (ep ccEP) Run(ctx context.Context, conn *grpc.ClientConn) (any, error) {
 		Err            string `json:"err,omitempty"`
 	})
 	if !ok {
-		return false, fmt.Errorf(`Invalid types at response time: want %T, got %T`, compareResp, resp)
+		return false, fmt.Errorf(`invalid types at response time: want %T, got %T`, compareResp, resp)
 	}
 	if compareResp.Err != "" {
 		return false, errors.New(compareResp.Err)
