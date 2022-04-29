@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/mcaci/briscola-serv/cli"
 	"github.com/mcaci/briscola-serv/daemon"
@@ -18,15 +19,15 @@ func main() {
 
 	switch {
 	case *isDaemon:
-		daemon.Start(&daemon.Opts{
+		log.Fatal(daemon.Start(&daemon.Opts{
 			HTTPAddr: *httpAddr,
 			GRPCAddr: *gRPCAddr,
-		})
+		}))
 	case *isCli:
-		cli.Start(&cli.Opts{
+		log.Fatal(cli.Start(&cli.Opts{
 			GRPCAddr: *gRPCAddr,
 			Cmd:      flag.Args()[0],
 			Args:     flag.Args()[1:],
-		})
+		}))
 	}
 }
