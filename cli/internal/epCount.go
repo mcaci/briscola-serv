@@ -24,7 +24,7 @@ func Count(args []string) (*pcEP, error) {
 			return nil, err
 		}
 		if !inRange(uint32(n)) {
-			return nil, fmt.Errorf("value %d in position %d is not in the correct range: [1-10] for position 0 and 2, [1-4] for the rest", i, n)
+			return nil, fmt.Errorf("value %d in position %d is not in the correct range: [1-10] for position 0 and 2, [1-4] for the rest", n, i)
 		}
 		numbers = append(numbers, uint32(n))
 	}
