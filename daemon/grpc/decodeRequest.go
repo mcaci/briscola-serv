@@ -23,8 +23,8 @@ func countRequestDecode(ctx context.Context, r interface{}) (interface{}, error)
 	switch req := r.(type) {
 	case *pb.PointCountRequest:
 		return struct {
-				CardNumber []uint32 `json:"numbers"`
-			}{CardNumber: req.CardNumber},
+				CardNumbers []uint32 `json:"numbers"`
+			}{CardNumbers: req.CardNumber},
 			nil
 	default:
 		return nil, fmt.Errorf("cannot decode request for count; got %#v", req)

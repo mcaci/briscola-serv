@@ -14,7 +14,10 @@ func pointsResponseEncode(ctx context.Context, r interface{}) (interface{}, erro
 		Points uint32 `json:"points"`
 		Err    string `json:"err,omitempty"`
 	}:
-		return &pb.CardPointsResponse{Points: res.Points}, errors.New(res.Err)
+		if res.Err != "" {
+			return nil, errors.New(res.Err)
+		}
+		return &pb.CardPointsResponse{Points: res.Points}, nil
 	default:
 		return nil, fmt.Errorf("cannot encode response for points; got %#v", res)
 	}
@@ -26,7 +29,10 @@ func countResponseEncode(ctx context.Context, r interface{}) (interface{}, error
 		Points uint32 `json:"points"`
 		Err    string `json:"err,omitempty"`
 	}:
-		return &pb.PointCountResponse{Count: res.Points}, errors.New(res.Err)
+		if res.Err != "" {
+			return nil, errors.New(res.Err)
+		}
+		return &pb.PointCountResponse{Count: res.Points}, nil
 	default:
 		return nil, fmt.Errorf("cannot encode response for count; got %#v", res)
 	}
@@ -38,7 +44,10 @@ func compareResponseEncode(ctx context.Context, r interface{}) (interface{}, err
 		SecondCardWins bool   `json:"secondCardWins"`
 		Err            string `json:"err,omitempty"`
 	}:
-		return &pb.CardCompareResponse{SecondCardWinsOverFirstOne: res.SecondCardWins}, errors.New(res.Err)
+		if res.Err != "" {
+			return nil, errors.New(res.Err)
+		}
+		return &pb.CardCompareResponse{SecondCardWinsOverFirstOne: res.SecondCardWins}, nil
 	default:
 		return nil, fmt.Errorf("cannot encode response for compare; got %#v", res)
 	}
