@@ -42,8 +42,8 @@ func NewHandler(ctx context.Context, mdws ...func(http.Handler) http.Handler) ht
 	}
 	for _, mdw := range mdws {
 		pointsHnd = mdw(pointsHnd)
-		countHnd = mdw(pointsHnd)
-		compareHnd = mdw(pointsHnd)
+		countHnd = mdw(countHnd)
+		compareHnd = mdw(compareHnd)
 	}
 
 	m := http.NewServeMux()

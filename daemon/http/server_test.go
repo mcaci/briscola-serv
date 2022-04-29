@@ -10,7 +10,7 @@ import (
 	httpsrv "github.com/mcaci/briscola-serv/daemon/http"
 )
 
-func TestNewServer(t *testing.T) {
+func TestPointsViaHTTP(t *testing.T) {
 	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
 	defer ts.Close()
 
@@ -19,14 +19,24 @@ func TestNewServer(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(res)
+}
 
-	res, err = http.Post(ts.URL+"/count", "", strings.NewReader(`{"numbers":[1, 2, 3]}`))
+func TestCountViaHTTP(t *testing.T) {
+	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
+	defer ts.Close()
+
+	res, err := http.Post(ts.URL+"/count", "", strings.NewReader(`{"numbers":[1, 2, 3]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(res)
+}
 
-	res, err = http.Post(ts.URL+"/compare", "", strings.NewReader(`{"firstCardNumber":1, "firstCardSeed":2, "secondCardNumber":3, "secondCardSeed":1, "briscolaSeed":1}`))
+func TestCompareViaHTTP(t *testing.T) {
+	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
+	defer ts.Close()
+
+	res, err := http.Post(ts.URL+"/compare", "", strings.NewReader(`{"firstCardNumber":1, "firstCardSeed":2, "secondCardNumber":3, "secondCardSeed":1, "briscolaSeed":1}`))
 	if err != nil {
 		t.Fatal(err)
 	}
