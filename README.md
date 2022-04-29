@@ -51,9 +51,7 @@ true
 Building:
 
 ```sh
-CGO_ENABLED=0 go build -o briscolad main.go
-docker build -t mcaci/briscola-serv:0.0.3 .
-rm briscolad
+export TAG=0.1.3; CGO_ENABLED=0 go build -o briscolad main.go; docker build -t mcaci/briscola-serv:$TAG .; rm briscolad
 ```
 
 Running (can also use --detach):
