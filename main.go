@@ -17,17 +17,21 @@ func main() {
 	)
 	flag.Parse()
 
+	var err error
 	switch {
 	case *isDaemon:
-		log.Fatal(daemon.Start(&daemon.Opts{
+		err = daemon.Start(&daemon.Opts{
 			HTTPAddr: *httpAddr,
 			GRPCAddr: *gRPCAddr,
-		}))
+		})
 	case *isCli:
-		log.Fatal(cli.Start(&cli.Opts{
+		err = cli.Start(&cli.Opts{
 			GRPCAddr: *gRPCAddr,
 			Cmd:      flag.Args()[0],
 			Args:     flag.Args()[1:],
-		}))
+		})
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 }
