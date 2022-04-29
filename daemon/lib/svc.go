@@ -22,7 +22,7 @@ func PointsEP(ctx context.Context, request interface{}) (response interface{}, e
 			Err    string `json:"err,omitempty"`
 		}{Points: v}, nil
 	default:
-		return nil, fmt.Errorf("req of type %t is not supported.", req)
+		return nil, fmt.Errorf("req %#v is not supported.", req)
 	}
 }
 
@@ -43,7 +43,7 @@ func CountEP(ctx context.Context, request interface{}) (response interface{}, er
 			Err    string `json:"err,omitempty"`
 		}{Points: v}, nil
 	default:
-		return nil, fmt.Errorf("req of type %t is not supported.", req)
+		return nil, fmt.Errorf("req %#v is not supported.", req)
 	}
 }
 
@@ -68,6 +68,6 @@ func CompareEP(ctx context.Context, request interface{}) (response interface{}, 
 			Err            string `json:"err,omitempty"`
 		}{SecondCardWins: v}, nil
 	default:
-		return nil, fmt.Errorf("req of type %t is not supported.", req)
+		return nil, fmt.Errorf("req %#v is not supported.", req)
 	}
 }
