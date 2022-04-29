@@ -12,6 +12,7 @@ import (
 
 	briscolagrpc "github.com/mcaci/briscola-serv/daemon/grpc"
 	briscolahttp "github.com/mcaci/briscola-serv/daemon/http"
+	httpmdw "github.com/mcaci/briscola-serv/daemon/http/mdw"
 	"github.com/mcaci/briscola-serv/pb"
 	"google.golang.org/grpc"
 )
@@ -23,34 +24,43 @@ type Opts struct {
 
 func Start(o *Opts) error {
 	select {
-	case err := <-startHTTPSrv(context.TODO(), o.HTTPAddr):
+	case err := <-startHTTP(context.Background(), o.HTTPAddr):
 		return err
-	case err := <-startGRPCSrv(context.TODO(), o.GRPCAddr):
+	case err := <-startGRPC(context.Background(), o.GRPCAddr):
 		return err
 	case err := <-handleSigTerm():
 		return err
 	}
 }
 
-func startHTTPSrv(ctx context.Context, addr string) <-chan error {
+func startHTTP(ctx context.Context, addr string) <-chan error {
 	log.Println("listenning to http requests on", addr)
-	handler := briscolahttp.NewHandler(ctx)
 	errChan := make(chan error)
 	go func() {
+		<-ctx.Done()
+		errChan <- ctx.Err()
+	}()
+	go func() {
+		handler := briscolahttp.NewHandler(ctx, httpmdw.Logged)
 		errChan <- http.ListenAndServe(addr, handler)
 	}()
 	return errChan
 }
 
-func startGRPCSrv(ctx context.Context, addr string) <-chan error {
+func startGRPC(ctx context.Context, addr string) <-chan error {
 	log.Println("listenning to grpc requests on", addr)
 	errChan := make(chan error)
+	go func() {
+		<-ctx.Done()
+		errChan <- ctx.Err()
+	}()
 	go func() {
 		listener, err := net.Listen("tcp", addr)
 		if err != nil {
 			errChan <- err
 			return
 		}
+		defer listener.Close()
 		server := briscolagrpc.NewServer(ctx)
 		gRPCServer := grpc.NewServer()
 		pb.RegisterBriscolaServer(gRPCServer, server)
