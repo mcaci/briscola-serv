@@ -1,4 +1,4 @@
-package srvhttp
+package http
 
 import (
 	"context"
@@ -6,49 +6,52 @@ import (
 	"net/http"
 
 	httptransport "github.com/go-kit/kit/transport/http"
+	httpmdw "github.com/mcaci/briscola-serv/daemon/http/mdw"
 	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 )
 
-func NewHandler(ctx context.Context) http.Handler {
+func NewHandler(ctx context.Context, mdws ...func(http.Handler) http.Handler) http.Handler {
+	var pointsHnd http.Handler = httptransport.NewServer(
+		briscola.PointsEP,
+		requestDecode[struct {
+			CardNumber uint32 `json:"number"`
+		}],
+		responseEncode,
+	)
+	var countHnd http.Handler = httptransport.NewServer(
+		briscola.CountEP,
+		requestDecode[struct {
+			CardNumbers []uint32 `json:"numbers"`
+		}],
+		responseEncode,
+	)
+	var compareHnd http.Handler = httptransport.NewServer(
+		briscola.CompareEP,
+		requestDecode[struct {
+			FirstCardNumber  uint32 `json:"firstCardNumber"`
+			FirstCardSeed    uint32 `json:"firstCardSeed"`
+			SecondCardNumber uint32 `json:"secondCardNumber"`
+			SecondCardSeed   uint32 `json:"secondCardSeed"`
+			BriscolaSeed     uint32 `json:"briscolaSeed"`
+		}],
+		responseEncode,
+	)
+
+	if len(mdws) == 0 {
+		mdws = append(mdws, httpmdw.Logged)
+	}
+	for _, mdw := range mdws {
+		pointsHnd = mdw(pointsHnd)
+		countHnd = mdw(pointsHnd)
+		compareHnd = mdw(pointsHnd)
+	}
+
 	m := http.NewServeMux()
-	m.Handle(points.pattern, points.handler)
-	m.Handle(count.pattern, count.handler)
-	m.Handle(compare.pattern, compare.handler)
+	m.Handle("/points", pointsHnd)
+	m.Handle("/count", countHnd)
+	m.Handle("/compare", compareHnd)
 	return m
 }
-
-type handlerData struct {
-	pattern string
-	handler http.Handler
-}
-
-var points = handlerData{pattern: "/points", handler: httptransport.NewServer(
-	briscola.PointsEP,
-	requestDecode[struct {
-		CardNumber uint32 `json:"number"`
-	}],
-	responseEncode,
-)}
-
-var count = handlerData{pattern: "/count", handler: httptransport.NewServer(
-	briscola.CountEP,
-	requestDecode[struct {
-		CardNumbers []uint32 `json:"numbers"`
-	}],
-	responseEncode,
-)}
-
-var compare = handlerData{pattern: "/compare", handler: httptransport.NewServer(
-	briscola.CompareEP,
-	requestDecode[struct {
-		FirstCardNumber  uint32 `json:"firstCardNumber"`
-		FirstCardSeed    uint32 `json:"firstCardSeed"`
-		SecondCardNumber uint32 `json:"secondCardNumber"`
-		SecondCardSeed   uint32 `json:"secondCardSeed"`
-		BriscolaSeed     uint32 `json:"briscolaSeed"`
-	}],
-	responseEncode,
-)}
 
 func requestDecode[T any](ctx context.Context, r *http.Request) (interface{}, error) {
 	var req T

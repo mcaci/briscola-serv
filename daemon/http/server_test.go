@@ -1,4 +1,4 @@
-package srvhttp_test
+package http_test
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	srvhttp "github.com/mcaci/briscola-serv/daemon/http"
+	httpsrv "github.com/mcaci/briscola-serv/daemon/http"
 )
 
 func TestNewServer(t *testing.T) {
-	ts := httptest.NewServer(srvhttp.NewHandler(context.TODO()))
+	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
 	defer ts.Close()
 
 	res, err := http.Post(ts.URL+"/points", "", strings.NewReader(`{"number":1}`))
