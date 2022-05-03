@@ -68,15 +68,16 @@ docker push mcaci/briscola-serv:0.0.1
 
 ### Deploying on KinD steps examples
 
-All these steps are grouped in the [deployment-script.sh](./deployment-script.sh) script.
+Here are the commands to run:
 
 ```sh
-kind create cluster --config conf/kind.yaml
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
-kubectl apply -f conf/metallb-cm.yaml
+kind create cluster --config kind/conf.yaml
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb --version v0.12.1 --values metallb/values.yaml
 kubectl apply -f blueprints/deployment.yaml
 ```
+
+All these steps are also grouped and executable in the [deployment-script.sh](./deployment-script.sh) script.
 
 To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
 
