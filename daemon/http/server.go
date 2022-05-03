@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -10,7 +11,9 @@ import (
 	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 )
 
-func NewHandler(ctx context.Context, mdws ...func(http.Handler) http.Handler) http.Handler {
+type server http.ServeMux
+
+func NewServer(mdws ...func(http.Handler) http.Handler) *server {
 	var pointsHnd http.Handler = httptransport.NewServer(
 		briscola.PointsEP,
 		requestDecode[struct {
@@ -50,7 +53,27 @@ func NewHandler(ctx context.Context, mdws ...func(http.Handler) http.Handler) ht
 	m.Handle("/points", pointsHnd)
 	m.Handle("/count", countHnd)
 	m.Handle("/compare", compareHnd)
-	return m
+	return (*server)(m)
+}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	(*http.ServeMux)(s).ServeHTTP(w, r)
+}
+
+func (s *server) Start(ctx context.Context, addr string) <-chan error {
+	if addr == "" {
+		addr = ":8080"
+	}
+	errChan := make(chan error)
+	go func() {
+		<-ctx.Done()
+		errChan <- ctx.Err()
+	}()
+	go func() {
+		log.Println("listenning to http requests on", addr)
+		errChan <- http.ListenAndServe(addr, s)
+	}()
+	return errChan
 }
 
 func requestDecode[T any](ctx context.Context, r *http.Request) (interface{}, error) {

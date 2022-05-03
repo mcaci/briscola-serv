@@ -11,7 +11,9 @@ import (
 )
 
 func TestPointsViaHTTP(t *testing.T) {
-	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
+	srv := httpsrv.NewServer()
+	srv.Start(context.TODO(), "")
+	ts := httptest.NewServer(srv)
 	defer ts.Close()
 
 	res, err := http.Post(ts.URL+"/points", "", strings.NewReader(`{"number":1}`))
@@ -22,7 +24,9 @@ func TestPointsViaHTTP(t *testing.T) {
 }
 
 func TestCountViaHTTP(t *testing.T) {
-	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
+	srv := httpsrv.NewServer()
+	srv.Start(context.TODO(), "")
+	ts := httptest.NewServer(srv)
 	defer ts.Close()
 
 	res, err := http.Post(ts.URL+"/count", "", strings.NewReader(`{"numbers":[1, 2, 3]}`))
@@ -33,7 +37,9 @@ func TestCountViaHTTP(t *testing.T) {
 }
 
 func TestCompareViaHTTP(t *testing.T) {
-	ts := httptest.NewServer(httpsrv.NewHandler(context.TODO()))
+	srv := httpsrv.NewServer()
+	srv.Start(context.TODO(), "")
+	ts := httptest.NewServer(srv)
 	defer ts.Close()
 
 	res, err := http.Post(ts.URL+"/compare", "", strings.NewReader(`{"firstCardNumber":1, "firstCardSeed":2, "secondCardNumber":3, "secondCardSeed":1, "briscolaSeed":1}`))

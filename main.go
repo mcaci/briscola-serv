@@ -20,12 +20,12 @@ func main() {
 	var err error
 	switch {
 	case *isDaemon:
-		err = daemon.Start(&daemon.Opts{
+		err = daemon.NewServer(&daemon.Opts{
 			HTTPAddr: *httpAddr,
 			GRPCAddr: *gRPCAddr,
 		})
 	case *isCli:
-		err = cli.Start(&cli.Opts{
+		err = cli.Run(&cli.Opts{
 			GRPCAddr: *gRPCAddr,
 			Cmd:      flag.Args()[0],
 			Args:     flag.Args()[1:],

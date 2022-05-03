@@ -20,7 +20,7 @@ type runner interface {
 	Run(ctx context.Context, conn *grpc.ClientConn) (any, error)
 }
 
-func Start(o *Opts) error {
+func Run(o *Opts) error {
 	var conn *grpc.ClientConn
 	var ep = o.EpRun
 	if ep == nil {

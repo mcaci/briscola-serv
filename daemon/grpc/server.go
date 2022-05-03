@@ -3,10 +3,13 @@ package srvgrpc
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 	"github.com/mcaci/briscola-serv/pb"
+	"google.golang.org/grpc"
 )
 
 type srv struct {
@@ -15,12 +18,36 @@ type srv struct {
 	compare grpctransport.Handler
 }
 
-func NewServer(ctx context.Context) *srv {
+func NewServer() *srv {
 	return &srv{
 		points:  grpctransport.NewServer(briscola.PointsEP, pointsRequestDecode, pointsResponseEncode),
 		count:   grpctransport.NewServer(briscola.CountEP, countRequestDecode, countResponseEncode),
 		compare: grpctransport.NewServer(briscola.CompareEP, compareRequestDecode, compareResponseEncode),
 	}
+}
+
+func (s *srv) Start(ctx context.Context, addr string) <-chan error {
+	if addr == "" {
+		addr = ":8081"
+	}
+	errChan := make(chan error)
+	go func() {
+		<-ctx.Done()
+		errChan <- ctx.Err()
+	}()
+	go func() {
+		log.Println("listenning to grpc requests on", addr)
+		srv := grpc.NewServer()
+		pb.RegisterBriscolaServer(srv, s)
+		listener, err := net.Listen("tcp", addr)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		defer listener.Close()
+		errChan <- srv.Serve(listener)
+	}()
+	return errChan
 }
 
 func (s *srv) SetPointsHandler(h grpctransport.Handler)  { s.points = h }

@@ -43,7 +43,8 @@ func TestNewServerPoints(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ts := srvgrpc.NewServer(context.TODO())
+			ts := srvgrpc.NewServer()
+			ts.Start(context.TODO(), "")
 			if tc.expectErr {
 				ts.SetPointsHandler(mockPointsGRPCHandler{ctx: tc.ctx, rs: tc.rs, err: tc.err})
 			}
@@ -80,7 +81,8 @@ func TestNewServerCount(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ts := srvgrpc.NewServer(context.TODO())
+			ts := srvgrpc.NewServer()
+			ts.Start(context.TODO(), "")
 			if tc.expectErr {
 				ts.SetCountHandler(mockPointsGRPCHandler{ctx: tc.ctx, rs: tc.rs, err: tc.err})
 			}
@@ -117,7 +119,8 @@ func TestNewServerCompare(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ts := srvgrpc.NewServer(context.TODO())
+			ts := srvgrpc.NewServer()
+			ts.Start(context.TODO(), "")
 			if tc.expectErr {
 				ts.SetCompareHandler(mockPointsGRPCHandler{ctx: tc.ctx, rs: tc.rs, err: tc.err})
 			}

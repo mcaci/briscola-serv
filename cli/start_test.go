@@ -14,7 +14,7 @@ type mockRunner struct{ err error }
 func (r mockRunner) Run(context.Context, *grpc.ClientConn) (any, error) { return 0, r.err }
 
 func TestStartOK(t *testing.T) {
-	err := cli.Start(&cli.Opts{EpRun: mockRunner{}})
+	err := cli.Run(&cli.Opts{EpRun: mockRunner{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestStartKO(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := cli.Start(tc.o)
+			err := cli.Run(tc.o)
 			if err == nil {
 				t.Fatal(err)
 			}

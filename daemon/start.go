@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,65 +11,37 @@ import (
 	briscolagrpc "github.com/mcaci/briscola-serv/daemon/grpc"
 	briscolahttp "github.com/mcaci/briscola-serv/daemon/http"
 	httpmdw "github.com/mcaci/briscola-serv/daemon/http/mdw"
-	"github.com/mcaci/briscola-serv/pb"
-	"google.golang.org/grpc"
 )
 
 type Opts struct {
+	Ctx      context.Context
 	HTTPAddr string
 	GRPCAddr string
 }
 
-func Start(o *Opts) error {
+func NewServer(o *Opts) error {
+	if o.Ctx == nil {
+		o.Ctx = context.Background()
+	}
 	select {
-	case err := <-startHTTP(context.Background(), o.HTTPAddr):
+	case err := <-briscolahttp.NewServer(httpmdw.Logged).Start(o.Ctx, o.HTTPAddr):
 		return err
-	case err := <-startGRPC(context.Background(), o.GRPCAddr):
+	case err := <-briscolagrpc.NewServer().Start(o.Ctx, o.GRPCAddr):
 		return err
-	case err := <-handleSigTerm():
+	case err := <-handleSigTerm(o.Ctx):
 		return err
+	case <-o.Ctx.Done():
+		return nil
 	}
 }
 
-func startHTTP(ctx context.Context, addr string) <-chan error {
-	log.Println("listenning to http requests on", addr)
-	errChan := make(chan error)
-	go func() {
-		<-ctx.Done()
-		errChan <- ctx.Err()
-	}()
-	go func() {
-		handler := briscolahttp.NewHandler(ctx, httpmdw.Logged)
-		errChan <- http.ListenAndServe(addr, handler)
-	}()
-	return errChan
-}
-
-func startGRPC(ctx context.Context, addr string) <-chan error {
-	log.Println("listenning to grpc requests on", addr)
-	errChan := make(chan error)
-	go func() {
-		<-ctx.Done()
-		errChan <- ctx.Err()
-	}()
-	go func() {
-		listener, err := net.Listen("tcp", addr)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		defer listener.Close()
-		server := briscolagrpc.NewServer(ctx)
-		gRPCServer := grpc.NewServer()
-		pb.RegisterBriscolaServer(gRPCServer, server)
-		errChan <- gRPCServer.Serve(listener)
-	}()
-	return errChan
-}
-
-func handleSigTerm() <-chan error {
+func handleSigTerm(ctx context.Context) <-chan error {
 	log.Println("Press Ctrl+C to terminate")
 	errChan := make(chan error)
+	go func() {
+		<-ctx.Done()
+		errChan <- ctx.Err()
+	}()
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
