@@ -71,15 +71,14 @@ docker push mcaci/briscola-serv:0.0.1
 Here are the commands to run:
 
 ```sh
-kind create cluster --config kind/conf.yaml
+kind create cluster --config deployment/kind/conf.yaml
+# repo add is needed to run only once, once added it stays until deleted
 helm repo add metallb https://metallb.github.io/metallb
 # install load balancer implementation metallb
-helm install metallb metallb/metallb --version v0.12.1 --values metallb/values.yaml
+helm install metallb metallb/metallb --version v0.12.1 --values deployment/metallb/values.yaml
 # install application
-helm install briscola-serv ./deployment
+helm install briscola-serv ./deployment/app
 ```
-
-All these steps are also grouped and executable in the [deployment-script.sh](./deployment-script.sh) script.
 
 To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
 
