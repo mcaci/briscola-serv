@@ -57,13 +57,13 @@ export TAG=0.1.3; CGO_ENABLED=0 go build -o briscolad main.go; docker build -t m
 Running (can also use --detach):
 
 ```sh
-docker run --rm -it -p 4000:8080 -p 8081:8081 mcaci/briscola-serv:0.0.1
+docker run --rm -it -p 4000:8080 -p 8081:8081 mcaci/briscola-serv:$TAG
 ```
 
 Pushing:
 
 ```sh
-docker push mcaci/briscola-serv:0.0.1
+docker push mcaci/briscola-serv:$TAG
 ```
 
 ### Deploying on KinD steps examples
