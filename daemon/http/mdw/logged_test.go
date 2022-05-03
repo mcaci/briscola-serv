@@ -10,7 +10,7 @@ import (
 	httpmdw "github.com/mcaci/briscola-serv/daemon/http/mdw"
 )
 
-func TestLoggingMdw(t *testing.T) {
+func TestLoggedMdw(t *testing.T) {
 	logHndl := httpmdw.Logged(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
 	}))
