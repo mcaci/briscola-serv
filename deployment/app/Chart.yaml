@@ -27,4 +27,3 @@ dependencies:
 - name: metallb
   version: "v0.12.1"
   repository: "https://metallb.github.io/metallb"
-  values: 
