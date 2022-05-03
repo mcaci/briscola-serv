@@ -73,8 +73,10 @@ Here are the commands to run:
 ```sh
 kind create cluster --config kind/conf.yaml
 helm repo add metallb https://metallb.github.io/metallb
+# install load balancer implementation metallb
 helm install metallb metallb/metallb --version v0.12.1 --values metallb/values.yaml
-kubectl apply -f blueprints/deployment.yaml
+# install application
+helm install briscola-serv ./deployment
 ```
 
 All these steps are also grouped and executable in the [deployment-script.sh](./deployment-script.sh) script.
@@ -82,9 +84,9 @@ All these steps are also grouped and executable in the [deployment-script.sh](./
 To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
 
 ```sh
-$ curl -XPOST -d '{"number":1}' http://172.19.255.200:8080/points
+$ curl -XPOST -d '{"number":1}' http://172.18.255.200:8080/points
 {"points":11}
-$ go run main.go -grpc 172.19.255.200:8081 -cli points 1
+$ go run main.go -grpc 172.18.255.200:8081 -cli points 1
 11
 ```
 
