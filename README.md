@@ -71,12 +71,7 @@ docker push mcaci/briscola-serv:0.0.1
 Here are the commands to run:
 
 ```sh
-kind create cluster --config deployment/kind/conf.yaml
-# repo add is needed to run only once, once added it stays until deleted
-helm repo add metallb https://metallb.github.io/metallb
-# install load balancer implementation metallb
-helm install metallb metallb/metallb --version v0.12.1 --values deployment/metallb/values.yaml
-# install application
+kind create cluster --config ./deployment/kind/conf.yaml
 helm install briscola-serv ./deployment/app
 ```
 
