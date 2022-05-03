@@ -7,6 +7,7 @@ import (
 	"net"
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
+	grpcmdw "github.com/mcaci/briscola-serv/daemon/grpc/mdw"
 	briscola "github.com/mcaci/briscola-serv/daemon/lib"
 	"github.com/mcaci/briscola-serv/pb"
 	"google.golang.org/grpc"
@@ -18,12 +19,21 @@ type srv struct {
 	compare grpctransport.Handler
 }
 
-func NewServer() *srv {
-	return &srv{
+func NewServer(mdws ...func(grpctransport.Handler) grpctransport.Handler) *srv {
+	s := &srv{
 		points:  grpctransport.NewServer(briscola.PointsEP, pointsRequestDecode, pointsResponseEncode),
 		count:   grpctransport.NewServer(briscola.CountEP, countRequestDecode, countResponseEncode),
 		compare: grpctransport.NewServer(briscola.CompareEP, compareRequestDecode, compareResponseEncode),
 	}
+	if len(mdws) == 0 {
+		mdws = append(mdws, grpcmdw.Logged)
+	}
+	for _, mdw := range mdws {
+		s.points = mdw(s.points)
+		s.count = mdw(s.count)
+		s.compare = mdw(s.compare)
+	}
+	return s
 }
 
 func (s *srv) Start(ctx context.Context, addr string) <-chan error {
