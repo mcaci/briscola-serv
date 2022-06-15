@@ -73,6 +73,8 @@ Here are the commands to run:
 ```sh
 kind create cluster --config ./deployment/kind/conf.yaml
 helm install briscola-serv ./deployment/briscola-serv
+kubectl label namespace default istio-injection=enabled --overwrite
+# kind delete pod
 ```
 
 To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
