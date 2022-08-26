@@ -1,16 +1,36 @@
 package briscola
 
 import (
+	"log"
+
 	"github.com/mcaci/ita-cards/card"
 )
 
 // IsOtherWinning checks if 'other' card wins being played after the base one and
 // with the specified input briscola
 func IsOtherWinning(firstCardNumber, firstCardSeed, secondCardNumber, secondCardSeed, briscolaSeed uint32) bool {
-	base := *card.MustID(firstCardNumber + firstCardSeed*10)
-	other := *card.MustID(secondCardNumber + secondCardSeed*10)
-	briscola := *card.MustID(1 + briscolaSeed*10)
-	return (!sameSeed(base, other) && sameSeed(other, briscola)) || (sameSeed(base, other) && isOtherGreater(base, other))
+	base, err := card.FromID(firstCardNumber + firstCardSeed*10)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	other, err := card.FromID(secondCardNumber + secondCardSeed*10)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	briscola, err := card.FromID(1 + briscolaSeed*10)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	switch sameSeed(base, other) {
+	case true:
+		return isOtherGreater(base, other)
+	case false:
+		return sameSeed(other, briscola)
+	}
+	return false
 }
 
 func sameSeed(base, other interface{ Seed() card.Seed }) bool { return base.Seed() == other.Seed() }
