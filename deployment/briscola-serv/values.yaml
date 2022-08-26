@@ -21,3 +21,12 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# metallb (load balancer)
+metallb:
+  configInline:
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 172.18.255.200-172.18.255.250

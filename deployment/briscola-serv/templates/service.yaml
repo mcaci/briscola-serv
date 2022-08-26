@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "briscola-serv.fullname" . }}-points
+  labels:
+    {{- include "briscola-serv.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: helm
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
+    - port: 8081
+      name: grpc
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    {{- include "briscola-serv.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "briscola-serv.fullname" . }}-count
+  labels:
+    {{- include "briscola-serv.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: helm
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
+    - port: 8081
+      name: grpc
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    {{- include "briscola-serv.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "briscola-serv.fullname" . }}-compare
+  labels:
+    {{- include "briscola-serv.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: helm
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
+    - port: 8081
+      name: grpc
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    {{- include "briscola-serv.selectorLabels" . | nindent 4 }}

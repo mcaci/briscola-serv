@@ -57,13 +57,13 @@ export TAG=0.1.3; CGO_ENABLED=0 go build -o briscolad main.go; docker build -t m
 Running (can also use --detach):
 
 ```sh
-docker run --rm -it -p 4000:8080 -p 8081:8081 mcaci/briscola-serv:0.0.1
+docker run --rm -it -p 4000:8080 -p 8081:8081 mcaci/briscola-serv:$TAG
 ```
 
 Pushing:
 
 ```sh
-docker push mcaci/briscola-serv:0.0.1
+docker push mcaci/briscola-serv:$TAG
 ```
 
 ### Deploying on KinD steps examples
@@ -71,13 +71,10 @@ docker push mcaci/briscola-serv:0.0.1
 Here are the commands to run:
 
 ```sh
-kind create cluster --config deployment/kind/conf.yaml
-# repo add is needed to run only once, once added it stays until deleted
-helm repo add metallb https://metallb.github.io/metallb
-# install load balancer implementation metallb
-helm install metallb metallb/metallb --version v0.12.1 --values deployment/metallb/values.yaml
-# install application
-helm install briscola-serv ./deployment/app
+kind create cluster --config ./deployment/kind/conf.yaml
+helm install briscola-serv ./deployment/briscola-serv
+kubectl label namespace default istio-injection=enabled --overwrite
+# kind delete pod
 ```
 
 To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
