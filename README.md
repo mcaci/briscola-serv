@@ -51,19 +51,44 @@ true
 Building:
 
 ```sh
-export TAG=0.1.3; CGO_ENABLED=0 go build -o briscolad main.go; docker build -t mcaci/briscola-serv:$TAG .; rm briscolad
+export TAG=0.1.8; CGO_ENABLED=0 go build -o briscolad main.go; docker build --rm -t mcaci/briscola-serv:$TAG .; rm briscolad
 ```
 
 Running (can also use --detach):
 
 ```sh
-docker run --rm -it -p 4000:8080 -p 8081:8081 mcaci/briscola-serv:$TAG
+docker run --rm -d -p 4000:8080 -p 8081:8081 --name briscola-serv mcaci/briscola-serv:$TAG
 ```
 
 Pushing:
 
 ```sh
 docker push mcaci/briscola-serv:$TAG
+```
+
+### Build for debugging
+
+Without optimization to avoid surprises while setting breakpoints.
+
+```sh
+docker build --rm -t mcaci/briscola-serv-debug:$TAG .
+```
+
+Here -N will disable optimization and `-l` disable inlining. This removes surprises when setting breakpoints.
+
+To be confirmed if push is needed.
+
+```sh
+docker push mcaci/briscola-serv-debug:$TAG
+```
+
+Next step:
+Start the debug with an ephemeral container
+
+```sh
+POD_NAME=`kubectl get pod -l app.kubernetes.io/name=briscola-serv --no-headers -o custom-columns=':metadata.name'`
+# "app" below comes from Docker file
+kubectl debug -it $POD_NAME --image=busybox:1.28 --target=briscola-serv
 ```
 
 ### Deploying on KinD steps examples
@@ -77,6 +102,10 @@ kubectl label namespace default istio-injection=enabled --overwrite
 # kind delete pod
 ```
 
+If the tag needs to be changed run `helm upgrade briscola-serv ./deployment/briscola-serv --set image.tag=$TAG`.
+
+If a change in the dependencies (like metallb) is needed run `helm dependency update ./deployment/briscola-serv/`.
+
 To test the deployment it is possible to run either of the two after adjusting the IP address to the one taken from the load balancer's external address:
 
 ```sh
@@ -88,4 +117,4 @@ $ go run main.go -grpc 172.18.255.200:8081 -cli points 1
 
 For more information read Kind's LoadBalancer [documentation](https://kind.sigs.k8s.io/docs/user/loadbalancer/).
 
-When done run `kind delete cluster` to dispose of it.
+When done run `kind delete cluster --name briscola-serv-cluster` to dispose of it.

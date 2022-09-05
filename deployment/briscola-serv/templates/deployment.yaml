@@ -29,6 +29,10 @@ spec:
             - name: grpc
               containerPort: 8081
               protocol: TCP
+          securityContext:
+            capabilities:
+              add:
+              - SYS_PTRACE
           # livenessProbe:
           #   httpGet:
           #     path: /
