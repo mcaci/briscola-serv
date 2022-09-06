@@ -87,8 +87,12 @@ Start the debug with an ephemeral container
 
 ```sh
 POD_NAME=`kubectl get pod -l app.kubernetes.io/name=briscola-serv --no-headers -o custom-columns=':metadata.name'`
-# "app" below comes from Docker file
+# for console
 kubectl debug -it $POD_NAME --image=busybox:1.28 --target=briscola-serv
+# missing to solve the ptrace issue
+kubectl debug -it $POD_NAME --image=mcaci/briscola-serv-debug:latest --target=briscola-serv
+# done with integrated container
+kubectl attach -it $POD_NAME -c debug
 ```
 
 ### Deploying on KinD steps examples
@@ -97,6 +101,8 @@ Here are the commands to run:
 
 ```sh
 kind create cluster --config ./deployment/kind/conf.yaml
+kubectl create ns briscola-serv-ns
+kubectl create ns metallb-system
 helm install briscola-serv ./deployment/briscola-serv
 kubectl label namespace default istio-injection=enabled --overwrite
 # kind delete pod
@@ -118,3 +124,39 @@ $ go run main.go -grpc 172.18.255.200:8081 -cli points 1
 For more information read Kind's LoadBalancer [documentation](https://kind.sigs.k8s.io/docs/user/loadbalancer/).
 
 When done run `kind delete cluster --name briscola-serv-cluster` to dispose of it.
+
+### More debugging info
+
+https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+
+curl -v -XPATCH -H "Content-Type: application/json-patch+json" \
+'http://127.0.0.1:8001/api/v1/namespaces/default/pods/nginx-8f458dc5b-wkvq4/ephemeralcontainers' \
+--data-binary @- << EOF
+[{
+"op": "add", "path": "/spec/ephemeralContainers/-",
+"value": {
+"command":[ "/bin/sh" ],
+"stdin": true, "tty": true,
+"image": "nicolaka/netshoot",
+"name": "debug-strace",
+"securityContext": {"capabilities": {"add": ["SYS_PTRACE"]}},
+"targetContainerName": "nginx" }}]
+EOF
+
+kubectl proxy --port=8080
+
+curl -v -XPATCH -H "Content-Type: application/json-patch+json" "http://127.0.0.1:8080/api/v1/namespaces/default/pods/$POD_NAME/ephemeralcontainers" --data-binary @- << EOF
+[{
+"op": "add", "path": "/spec/ephemeralContainers/-",
+"value": {
+"command":[ "dlv", "attach", "1" ],
+"stdin": true, "tty": true,
+"image": "mcaci/briscola-serv-debug":latest,
+"name": "debug-briscola-serv",
+"securityContext": {"capabilities": {"add": ["SYS_PTRACE"]}},
+"targetContainerName": "briscola-serv" }}]
+EOF
+
+kubectl exec -it $POD_NAME -c debug-briscola-serv" -- bash
+
+"dlv", "attach", "1"
