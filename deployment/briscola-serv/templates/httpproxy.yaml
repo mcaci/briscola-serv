@@ -1,0 +1,25 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: basic
+spec:
+  virtualhost:
+    fqdn: localhost
+  routes:
+  - services:
+    - name: briscola-serv
+      port: 8080
+    conditions:
+    - prefix: /http
+    pathRewritePolicy:
+      replacePrefix:
+      - replacement: /
+  # TODO: this service doesn't work
+  - services:
+    - name: briscola-serv
+      port: 8081
+    conditions:
+    - prefix: /grpc
+    pathRewritePolicy:
+      replacePrefix:
+      - replacement: :8081/

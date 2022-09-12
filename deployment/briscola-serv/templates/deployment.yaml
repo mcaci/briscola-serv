@@ -46,13 +46,4 @@ spec:
           #   httpGet:
           #     path: /
           #     port: http
----
-# TODO: why remove first and then add and helm upgrade?
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: briscola-ippool
-  namespace: default
-spec:
-  addresses:
-  - 172.18.255.200-172.18.255.250
+          
