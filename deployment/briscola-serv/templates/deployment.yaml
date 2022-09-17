@@ -31,7 +31,7 @@ spec:
               containerPort: 8081
               protocol: TCP
         - name: debug
-          image: mcaci/briscola-serv-debug:latest
+          image: localhost:5000/briscola-serv-debug:latest
           securityContext:
             capabilities:
               add:

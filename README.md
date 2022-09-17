@@ -157,6 +157,38 @@ curl -v -XPATCH -H "Content-Type: application/json-patch+json" "http://127.0.0.1
 "targetContainerName": "briscola-serv" }}]
 EOF
 
-kubectl exec -it $POD_NAME -c debug-briscola-serv" -- bash
+kubectl exec -it $POD_NAME -c debug -- /bin/sh
+ps
+dlv attach 7
 
 "dlv", "attach", "1"
+
+/go # vi /root/.dlv/config.yml
+/go # touch /root/.dlv/config.yml
+touch: /root/.dlv/config.yml: No such file or directory
+/go # mkdir /root/.dlv
+/go # touch /root/.dlv/config.yml
+/go # vi /root/.dlv/config.yml
+/go # dlv attach 7
+Successfully moved config from: /root/.dlv to: /root/.config/dlv/config.yml
+could not attach to pid 7: no such process
+/go # ps
+PID   USER     TIME  COMMAND
+    1 65535     0:00 /pause
+   21 root      0:00 /bin/sh
+   46 root      0:00 /bin/sh
+  174 root      0:00 ./briscolad -d
+  199 root      0:00 ps
+/go # dlv attach 174
+Type 'help' for list of commands.
+(dlv) list main:main
+Command failed: Malformed breakpoint location "main:main" at 5: line offset negative or not a number
+(dlv) list main:main:1
+Command failed: location "main:main:1" not found
+(dlv) list ./main.go:1
+Command failed: location "./main.go:1" not found
+(dlv) list main.go:1
+Showing /home/mcaci/go/src/github.com/mcaci/briscola-serv/main.go:1 (PC: 0x0)
+Command failed: open /project/home/mcaci/go/src/github.com/mcaci/briscola-serv/main.go: no such file or directory
+
+https://stackoverflow.com/questions/53621853/golang-dlv-unable-to-see-source-no-such-file-or-directory
